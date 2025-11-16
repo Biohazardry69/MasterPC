@@ -1334,15 +1334,15 @@
   }
 
   async function setCurrentSubjectAndLoad(name, file, imageUrl){
+    // Set the user-chosen name FIRST, before loading the file
+    setCurrentSubject(name);
+
     try{
       const r = await fetch(file, {cache:'no-store'});
       if (!r.ok) throw new Error(`Failed to load ${file}`);
       const data = await r.json();
-      const { name: subjectName, image: subjectImage, pairs } = normalizeSubjectData(data);
-
-      // Use name from file if available, otherwise use provided name
-      const finalName = subjectName || name || 'Subject';
-      setCurrentSubject(finalName);
+      const { image: subjectImage, pairs } = normalizeSubjectData(data);
+      // Note: we ignore subjectName from the file here
 
       // Import parameters
       importPairsApply(pairs);
