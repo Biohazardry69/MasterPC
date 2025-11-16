@@ -466,7 +466,9 @@
     rep.className = 'repeater' + (item.compact ? ' compact' : '');
     rep.dataset.repeater = item.id;
     rep.dataset.label = item.label || item.id;
-    rep.dataset.columns = JSON.stringify(item.columns || []);
+
+    const columns = item.columns || [];
+    rep.dataset.columns = JSON.stringify(columns);
 
     const head = document.createElement('div');
     head.className = 'rep-head';
@@ -476,18 +478,29 @@
     addBtn.textContent = 'Add';
     head.appendChild(addBtn);
 
+    // NEW: column labels header
+    const colsHead = document.createElement('div');
+    colsHead.className = 'rep-cols';
+    colsHead.style.gridTemplateColumns = columns.map(()=>'1fr').join(' ');
+    columns.forEach(col=>{
+      const c = document.createElement('div');
+      c.className = 'col-label';
+      c.textContent = col.label || col.key || '';
+      colsHead.appendChild(c);
+    });
+
     const list = document.createElement('div');
     list.className = 'rep-list';
 
-    rep.appendChild(head);
-    rep.appendChild(list);
+    rep.append(head, colsHead, list);
 
-    // Wrap in group-body row look
+    // Keep schema for formatter/logs
+    registerParamMeta(item.id, {type:'repeater', label:item.label, unit:'', default:item.default || [], columns, itemRef:item});
+
+    // Wrap to match other controls' spacing
     const wrap = document.createElement('div');
     wrap.className = 'group-body';
     wrap.appendChild(rep);
-
-    registerParamMeta(item.id, {type:'repeater', label:item.label, unit:'', default:item.default || [], columns:item.columns || [], itemRef:item});
     return wrap;
   }
 
@@ -783,19 +796,31 @@
 
     columns.forEach(col=>{
       const wrap = document.createElement('div');
+      const labelText = col.label || col.key || '';
+
       if (col.type === 'range'){
         wrap.style.display='grid';
         wrap.style.gridTemplateColumns='1fr 50px';
         wrap.style.gap='6px';
         const r = document.createElement('input');
-        r.type='range'; r.min = col.min ?? 0; r.max = col.max ?? 100; r.step = col.step ?? 1;
+        r.type='range';
+        r.min = col.min ?? 0; r.max = col.max ?? 100; r.step = col.step ?? 1;
         r.value = Number.isFinite(Number(data[col.key])) ? data[col.key] : 0;
-        const bub = document.createElement('div'); bub.className='value-bubble'; bub.textContent = r.value;
-        r.addEventListener('input', ()=>{ bub.textContent=r.value; recordRepeater(rep); });
+        r.title = labelText;               // tooltip
+        r.setAttribute('aria-label', labelText);
+
+        const bub = document.createElement('div');
+        bub.className = 'value-bubble'; bub.textContent = r.value;
+        r.addEventListener('input', ()=>{ bub.textContent = r.value; recordRepeater(rep); });
+
         wrap.append(r, bub);
       }else{
         const i = document.createElement('input');
-        i.type='text'; i.placeholder = col.label || ''; i.value = data[col.key] ?? '';
+        i.type='text';
+        i.placeholder = labelText || col.key || '';
+        i.value = data[col.key] ?? '';
+        i.title = labelText;
+        i.setAttribute('aria-label', labelText);
         i.addEventListener('change', ()=> recordRepeater(rep));
         wrap.appendChild(i);
       }
@@ -895,10 +920,13 @@
       els.queueList.appendChild(e); return;
     }
     for (const [id, ch] of stagedChanges.entries()){
-      const div = document.createElement('div'); div.className='change';
+      const fromStr = formatValueForLog(id, ch.from, ch.unit);
+      const toStr   = formatValueForLog(id, ch.to,   ch.unit);
+      const div = document.createElement('div');
+      div.className = 'change';
       div.innerHTML = `<span class="verb">SET</span> <span class="path">${escapeHtml(ch.label)}</span>
-        <span class="from">[${escapeHtml(displayVal(ch.from, ch.unit))}]</span>
-        → <span class="to">${escapeHtml(displayVal(ch.to, ch.unit))}</span>`;
+        <span class="from">[${escapeHtml(fromStr)}]</span>
+        → <span class="to">${escapeHtml(toStr)}</span>`;
       els.queueList.appendChild(div);
     }
   }
@@ -906,19 +934,27 @@
   function renderApplied(){
     els.appliedList.innerHTML = '';
     if (!appliedLog.length){
-      const e = document.createElement('div'); e.className='note'; e.textContent='No applied changes yet.';
-      els.appliedList.appendChild(e); return;
+      const e = document.createElement('div');
+      e.className = 'note';
+      e.textContent = 'No applied changes yet.';
+      els.appliedList.appendChild(e);
+      return;
     }
-    appliedLog.slice(-500).forEach(it=>{
-      const div = document.createElement('div'); div.className='change';
-      if (it.cmd){
-        div.innerHTML = `<span class="verb">CMD</span> <span class="path">${escapeHtml(it.cmd)}</span>
-          <span class="from ghost">@${new Date(it.ts).toLocaleTimeString()}</span>`;
+
+    appliedLog.slice(-500).forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'change';
+
+      if (item.cmd){
+        div.innerHTML = `<span class="verb">CMD</span> <span class="path">${escapeHtml(item.cmd)}</span>
+          <span class="from ghost">@${new Date(item.ts).toLocaleTimeString()}</span>`;
       }else{
-        div.innerHTML = `<span class="verb">APPLY</span> <span class="path">${escapeHtml(it.label)}</span>
-          <span class="from">[${escapeHtml(displayVal(it.from, it.unit))}]</span>
-          → <span class="to">${escapeHtml(displayVal(it.to, it.unit))}</span>
-          <span class="from ghost">@${new Date(it.ts).toLocaleTimeString()}</span>`;
+        const fromStr = formatValueForLog(item.param, item.from, item.unit);
+        const toStr   = formatValueForLog(item.param, item.to,   item.unit);
+        div.innerHTML = `<span class="verb">APPLY</span> <span class="path">${escapeHtml(item.label)}</span>
+          <span class="from">[${escapeHtml(fromStr)}]</span>
+          → <span class="to">${escapeHtml(toStr)}</span>
+          <span class="from ghost">@${new Date(item.ts).toLocaleTimeString()}</span>`;
       }
       els.appliedList.appendChild(div);
     });
@@ -945,6 +981,82 @@
     if (Array.isArray(val) || typeof val === 'object') return '[...]';
     if (unit) return `${val} ${unit}`;
     return String(val);
+  }
+
+
+  // Pretty-print values for logs (arrays, repeaters, tags, etc.)
+  function formatValueForLog(id, val, unit){
+    if (val === null || val === undefined || val === '—') return '—';
+
+    const meta = PARAM_META.get(id);
+
+    // Repeater rows
+    if (Array.isArray(val) && meta && meta.type === 'repeater'){
+      const cols = meta.columns || [];
+      const rows = val.map(row => formatRepeaterRow(row, cols)).filter(Boolean);
+
+      const MAX = 6;
+      return rows.length > MAX
+        ? rows.slice(0, MAX).join('; ') + `; … +${rows.length - MAX} more`
+        : rows.join('; ');
+    }
+
+    // Arrays (tags or primitives)
+    if (Array.isArray(val)){
+      const items = val.map(v => typeof v === 'object' ? JSON.stringify(v) : String(v));
+      const MAX = 10;
+      return items.length > MAX
+        ? items.slice(0, MAX).join(', ') + `, … +${items.length - MAX}`
+        : items.join(', ');
+    }
+
+    // Objects (rare)
+    if (typeof val === 'object'){
+      try{ return JSON.stringify(val); }catch{ return '[object]'; }
+    }
+
+    // Primitives
+    return unit ? `${val} ${unit}` : String(val);
+  }
+
+  function formatRepeaterRow(row, columns){
+    if (!row || typeof row !== 'object') return '';
+
+    // Use a sensible header if we have one
+    const headerKey = ['name','person','title','label'].find(k => row[k] !== undefined && row[k] !== '');
+    const header = headerKey ? String(row[headerKey]) : '';
+
+    // Build label:value parts for the remaining columns
+    const parts = [];
+    for (const col of (columns || [])){
+      const key = col.key;
+      if (!key) continue;
+      if (key === headerKey) continue;
+      const v = row[key];
+      if (v === undefined || String(v).length === 0) continue;
+      const lbl = shortLabel(col.label || key);
+      parts.push(`${lbl}: ${v}`);
+    }
+
+    if (header && parts.length){
+      return `${header} (${parts.join(', ')})`;
+    }else if (header){
+      return header;
+    }else if (parts.length){
+      return parts.join(', ');
+    }
+    return '';
+  }
+
+  function shortLabel(label){
+    // Friendly abbreviations for common columns
+    const L = String(label).toLowerCase();
+    if (L.includes('loyal')) return 'Loyalty';
+    if (L.includes('trust')) return 'Trust';
+    if (L.includes('affect')) return 'Affection';
+    if (L.includes('since')) return 'Since';
+    if (L === 'name') return 'Name';
+    return label;
   }
 
   // -------------------- Defaults & Value Application --------------------

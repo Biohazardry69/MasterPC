@@ -432,6 +432,20 @@ input[type="range"]{
   background:#2b0a0f; 
 }
 
+.rep-cols{
+  display:grid;
+  gap:6px;
+  margin: 2px 0 6px 0;
+  color: var(--muted);
+  font-size: 11px;
+  padding: 0 2px;
+}
+.rep-cols .col-label{
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
 .tag-input{ 
   display:flex; 
   flex-wrap:wrap; 
