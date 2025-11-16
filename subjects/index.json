@@ -1,0 +1,6 @@
+[
+{ "name": "Baseline Female", "file": "subjects/baseline_female.json", "image": "subjects/baseline_female.png" },
+{ "name": "Baseline Male", "file": "subjects/baseline_male.json", "image": "subjects/baseline_male.png" },
+{ "name": "Baseline Bimbo", "file": "subjects/baseline_bimbo.json", "image": "subjects/baseline_bimbo.png" },
+{ "name": "Baseline Chad", "file": "subjects/baseline_chad.json", "image": "subjects/baseline_chad.png" }
+]

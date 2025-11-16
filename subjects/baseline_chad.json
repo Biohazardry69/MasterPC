@@ -1,0 +1,855 @@
+{
+  "values": [
+    {
+      "id": "physical.height.cm",
+      "value": 188
+    },
+    {
+      "id": "physical.mass.kg",
+      "value": 92
+    },
+    {
+      "id": "physical.age.apparent",
+      "value": 20
+    },
+    {
+      "id": "physical.age.biological",
+      "value": 20
+    },
+    {
+      "id": "physical.proportions.waist.cm",
+      "value": 82
+    },
+    {
+      "id": "physical.proportions.hip.cm",
+      "value": 100
+    },
+    {
+      "id": "physical.proportions.chest.cm",
+      "value": 112
+    },
+    {
+      "id": "physical.proportions.shoulders.cm",
+      "value": 52
+    },
+    {
+      "id": "physical.proportions.thighs.cm",
+      "value": 64
+    },
+    {
+      "id": "physical.proportions.calves.cm",
+      "value": 42
+    },
+    {
+      "id": "physical.proportions.biceps.cm",
+      "value": 42
+    },
+    {
+      "id": "physical.proportions.neck.cm",
+      "value": 42
+    },
+    {
+      "id": "physical.gender.identity",
+      "value": "Male"
+    },
+    {
+      "id": "physical.gender.presentation",
+      "value": "Masculine"
+    },
+    {
+      "id": "physical.gender.chromosomes",
+      "value": "XY"
+    },
+    {
+      "id": "physical.gender.hormones.testosterone",
+      "value": 140
+    },
+    {
+      "id": "physical.gender.hormones.estrogen",
+      "value": 15
+    },
+    {
+      "id": "physical.genitals.penis.length.flaccid.cm",
+      "value": 11
+    },
+    {
+      "id": "physical.genitals.penis.length.erect.cm",
+      "value": 17.5
+    },
+    {
+      "id": "physical.genitals.penis.girth.cm",
+      "value": 13
+    },
+    {
+      "id": "physical.genitals.penis.circumcised",
+      "value": "Circumcised"
+    },
+    {
+      "id": "physical.genitals.penis.shape",
+      "value": "Straight"
+    },
+    {
+      "id": "physical.genitals.penis.sensitivity",
+      "value": 70
+    },
+    {
+      "id": "physical.genitals.testicles.size.cm",
+      "value": 5
+    },
+    {
+      "id": "physical.genitals.testicles.hang",
+      "value": 60
+    },
+    {
+      "id": "physical.genitals.fertility.sperm.count",
+      "value": 120
+    },
+    {
+      "id": "physical.genitals.fertility.virility",
+      "value": 120
+    },
+    {
+      "id": "physical.genitals.refractory.period",
+      "value": 12
+    },
+    {
+      "id": "physical.sensitivity.neck",
+      "value": 35
+    },
+    {
+      "id": "physical.sensitivity.ears",
+      "value": 40
+    },
+    {
+      "id": "physical.sensitivity.lips",
+      "value": 50
+    },
+    {
+      "id": "physical.sensitivity.inner.thighs",
+      "value": 45
+    },
+    {
+      "id": "physical.sensitivity.back",
+      "value": 30
+    },
+    {
+      "id": "physical.sensitivity.feet",
+      "value": 20
+    },
+    {
+      "id": "physical.sensitivity.anus",
+      "value": 25
+    },
+    {
+      "id": "appearance.hair.length.cm",
+      "value": 6
+    },
+    {
+      "id": "appearance.hair.color.hex",
+      "value": "#e8d7a3"
+    },
+    {
+      "id": "appearance.hair.color.name",
+      "value": "Blonde"
+    },
+    {
+      "id": "appearance.hair.style",
+      "value": "Straight"
+    },
+    {
+      "id": "appearance.hair.thickness",
+      "value": 75
+    },
+    {
+      "id": "appearance.hair.growth.speed",
+      "value": 100
+    },
+    {
+      "id": "appearance.body.hair.chest",
+      "value": 25
+    },
+    {
+      "id": "appearance.body.hair.arms",
+      "value": 40
+    },
+    {
+      "id": "appearance.body.hair.legs",
+      "value": 55
+    },
+    {
+      "id": "appearance.body.hair.pubic",
+      "value": 70
+    },
+    {
+      "id": "appearance.body.hair.facial",
+      "value": 40
+    },
+    {
+      "id": "appearance.eyes.color.hex",
+      "value": "#5b9bd5"
+    },
+    {
+      "id": "appearance.eyes.color.name",
+      "value": "Blue"
+    },
+    {
+      "id": "appearance.eyes.shape",
+      "value": "Hooded"
+    },
+    {
+      "id": "appearance.eyelashes.length",
+      "value": 45
+    },
+    {
+      "id": "appearance.nose.shape",
+      "value": "Straight"
+    },
+    {
+      "id": "appearance.lips.size",
+      "value": "Average"
+    },
+    {
+      "id": "appearance.lips.color.hex",
+      "value": "#c99a8a"
+    },
+    {
+      "id": "appearance.lips.color.name",
+      "value": "Natural"
+    },
+    {
+      "id": "appearance.face.shape",
+      "value": "Square"
+    },
+    {
+      "id": "appearance.cheekbones",
+      "value": "Very Prominent"
+    },
+    {
+      "id": "appearance.jawline",
+      "value": "Strong"
+    },
+    {
+      "id": "appearance.skin.tone",
+      "value": "Tan"
+    },
+    {
+      "id": "appearance.skin.smoothness",
+      "value": 70
+    },
+    {
+      "id": "appearance.skin.blemishes",
+      "value": 12
+    },
+    {
+      "id": "appearance.features",
+      "value": ["strong jawline", "defined abs"]
+    },
+    {
+      "id": "appearance.voice.pitch.hz",
+      "value": 110
+    },
+    {
+      "id": "appearance.voice.depth",
+      "value": 80
+    },
+    {
+      "id": "appearance.symmetry",
+      "value": 82
+    },
+    {
+      "id": "appearance.attractiveness",
+      "value": 85
+    },
+    {
+      "id": "fitness.strength",
+      "value": 88
+    },
+    {
+      "id": "fitness.endurance",
+      "value": 75
+    },
+    {
+      "id": "fitness.agility",
+      "value": 65
+    },
+    {
+      "id": "fitness.flexibility",
+      "value": 45
+    },
+    {
+      "id": "fitness.metabolism",
+      "value": 115
+    },
+    {
+      "id": "fitness.bodyfat",
+      "value": 12
+    },
+    {
+      "id": "fitness.muscle.mass",
+      "value": 85
+    },
+    {
+      "id": "health.overall",
+      "value": 90
+    },
+    {
+      "id": "health.immune.system",
+      "value": 85
+    },
+    {
+      "id": "health.healing.rate",
+      "value": 110
+    },
+    {
+      "id": "mental.cognition.intelligence",
+      "value": 95
+    },
+    {
+      "id": "mental.cognition.memory.capacity",
+      "value": 60
+    },
+    {
+      "id": "mental.cognition.memory.recall",
+      "value": 58
+    },
+    {
+      "id": "mental.cognition.learning.speed",
+      "value": 62
+    },
+    {
+      "id": "mental.cognition.focus",
+      "value": 55
+    },
+    {
+      "id": "mental.cognition.creativity",
+      "value": 50
+    },
+    {
+      "id": "mental.cognition.logical.thinking",
+      "value": 60
+    },
+    {
+      "id": "mental.personality.confidence",
+      "value": 92
+    },
+    {
+      "id": "mental.personality.kindness",
+      "value": 50
+    },
+    {
+      "id": "mental.personality.aggression",
+      "value": 55
+    },
+    {
+      "id": "mental.personality.curiosity",
+      "value": 48
+    },
+    {
+      "id": "mental.personality.extraversion",
+      "value": 88
+    },
+    {
+      "id": "mental.personality.empathy",
+      "value": 45
+    },
+    {
+      "id": "mental.personality.assertiveness",
+      "value": 85
+    },
+    {
+      "id": "mental.personality.openness",
+      "value": 55
+    },
+    {
+      "id": "mental.personality.conscientiousness",
+      "value": 52
+    },
+    {
+      "id": "mental.personality.neuroticism",
+      "value": 25
+    },
+    {
+      "id": "mental.emotions.happiness",
+      "value": 75
+    },
+    {
+      "id": "mental.emotions.fear",
+      "value": 20
+    },
+    {
+      "id": "mental.emotions.desire",
+      "value": 85
+    },
+    {
+      "id": "mental.emotions.calmness",
+      "value": 70
+    },
+    {
+      "id": "mental.emotions.anger",
+      "value": 45
+    },
+    {
+      "id": "mental.emotions.anxiety",
+      "value": 25
+    },
+    {
+      "id": "mental.emotions.stress.tolerance",
+      "value": 75
+    },
+    {
+      "id": "mental.influence.willpower",
+      "value": 75
+    },
+    {
+      "id": "mental.influence.susceptibility",
+      "value": 30
+    },
+    {
+      "id": "mental.influence.suggestibility",
+      "value": 32
+    },
+    {
+      "id": "mental.influence.obedience",
+      "value": 28
+    },
+    {
+      "id": "mental.influence.independence",
+      "value": 82
+    },
+    {
+      "id": "skills.languages",
+      "value": [
+        {
+          "language": "English",
+          "fluency": 100
+        }
+      ]
+    },
+    {
+      "id": "skills.artistic.ability",
+      "value": 25
+    },
+    {
+      "id": "skills.combat.training",
+      "value": 55
+    },
+    {
+      "id": "skills.technical.programming",
+      "value": 20
+    },
+    {
+      "id": "skills.musical.ability",
+      "value": 25
+    },
+    {
+      "id": "skills.athletic.ability",
+      "value": 88
+    },
+    {
+      "id": "skills.cooking",
+      "value": 30
+    },
+    {
+      "id": "habits.likes",
+      "value": [
+        {
+          "like": "Working out",
+          "intensity": 95
+        },
+        {
+          "like": "Sports",
+          "intensity": 88
+        },
+        {
+          "like": "Parties",
+          "intensity": 85
+        },
+        {
+          "like": "Protein shakes",
+          "intensity": 80
+        },
+        {
+          "like": "Competition",
+          "intensity": 90
+        }
+      ]
+    },
+    {
+      "id": "habits.dislikes",
+      "value": [
+        {
+          "dislike": "Weakness",
+          "intensity": 75
+        },
+        {
+          "dislike": "Being challenged",
+          "intensity": 65
+        },
+        {
+          "dislike": "Losing",
+          "intensity": 80
+        }
+      ]
+    },
+    {
+      "id": "habits.hobbies",
+      "value": [
+        {
+          "hobby": "Weightlifting",
+          "proficiency": 90
+        },
+        {
+          "hobby": "Football",
+          "proficiency": 80
+        },
+        {
+          "hobby": "Partying",
+          "proficiency": 75
+        }
+      ]
+    },
+    {
+      "id": "habits.sleep.schedule",
+      "value": "23:30–06:30"
+    },
+    {
+      "id": "habits.sleep.quality",
+      "value": 70
+    },
+    {
+      "id": "habits.sleep.hours",
+      "value": 7
+    },
+    {
+      "id": "sexuality.orientation",
+      "value": "Heterosexual"
+    },
+    {
+      "id": "sexuality.romantic.orientation",
+      "value": "Heteroromantic"
+    },
+    {
+      "id": "sexuality.libido",
+      "value": 110
+    },
+    {
+      "id": "sexuality.arousal.ease",
+      "value": 95
+    },
+    {
+      "id": "sexuality.stamina",
+      "value": 90
+    },
+    {
+      "id": "sexuality.orgasm.ease",
+      "value": 90
+    },
+    {
+      "id": "sexuality.orgasm.intensity",
+      "value": 80
+    },
+    {
+      "id": "sexuality.orgasm.multiple",
+      "value": "No"
+    },
+    {
+      "id": "sexuality.attraction.women",
+      "value": 95
+    },
+    {
+      "id": "sexuality.attraction.men",
+      "value": 0
+    },
+    {
+      "id": "sexuality.attraction.nonbinary",
+      "value": 0
+    },
+    {
+      "id": "sexuality.preferences.dominance",
+      "value": 75
+    },
+    {
+      "id": "sexuality.preferences.exhibitionism",
+      "value": 60
+    },
+    {
+      "id": "sexuality.preferences.voyeurism",
+      "value": 50
+    },
+    {
+      "id": "sexuality.preferences.roughness",
+      "value": 75
+    },
+    {
+      "id": "sexuality.preferences.tenderness",
+      "value": 35
+    },
+    {
+      "id": "sexuality.openness.experimentation",
+      "value": 55
+    },
+    {
+      "id": "sexuality.preferences.oral.giving",
+      "value": 50
+    },
+    {
+      "id": "sexuality.preferences.oral.receiving",
+      "value": 95
+    },
+    {
+      "id": "sexuality.preferences.anal.giving",
+      "value": 70
+    },
+    {
+      "id": "sexuality.preferences.anal.receiving",
+      "value": 5
+    },
+    {
+      "id": "sexuality.experience.level",
+      "value": "Very Experienced"
+    },
+    {
+      "id": "sexuality.experience.partners.count",
+      "value": 18
+    },
+    {
+      "id": "sexuality.experience.skill",
+      "value": 70
+    },
+    {
+      "id": "sexuality.inhibitions",
+      "value": 30
+    },
+    {
+      "id": "sexuality.shame",
+      "value": 20
+    },
+    {
+      "id": "sexuality.fetishes.list",
+      "value": [
+        {
+          "fetish": "Being worshipped",
+          "intensity": 85
+        },
+        {
+          "fetish": "Athletic women",
+          "intensity": 80
+        },
+        {
+          "fetish": "Dominance",
+          "intensity": 75
+        }
+      ]
+    },
+    {
+      "id": "social.relationship.status",
+      "value": "Single"
+    },
+    {
+      "id": "social.influence.charisma",
+      "value": 82
+    },
+    {
+      "id": "social.influence.popularity",
+      "value": 88
+    },
+    {
+      "id": "social.influence.persuasiveness",
+      "value": 70
+    },
+    {
+      "id": "social.reputation.score",
+      "value": 45
+    },
+    {
+      "id": "social.reputation.tags",
+      "value": ["jock", "alpha", "popular", "player", "gym bro"]
+    },
+    {
+      "id": "history.dob",
+      "value": "2004-05-18"
+    },
+    {
+      "id": "history.birthplace",
+      "value": "San Diego, California"
+    },
+    {
+      "id": "history.schools",
+      "value": [
+        {
+          "school_name": "Oceanside High School",
+          "years": "2018–2022"
+        },
+        {
+          "school_name": "State University (Athletic Scholarship)",
+          "years": "2022–present"
+        }
+      ]
+    },
+    {
+      "id": "history.major.events",
+      "value": [
+        {
+          "year": "2022",
+          "event": "Received football scholarship"
+        },
+        {
+          "year": "2021",
+          "event": "Won state championship"
+        },
+        {
+          "year": "2020",
+          "event": "Started serious weightlifting"
+        }
+      ]
+    },
+    {
+      "id": "species.base",
+      "value": "Human"
+    },
+    {
+      "id": "species.humanity",
+      "value": 100
+    },
+    {
+      "id": "species.hybrid.enabled",
+      "value": "None"
+    },
+    {
+      "id": "species.form.type",
+      "value": "Fully Human"
+    },
+    {
+      "id": "species.form.anthro.level",
+      "value": 0
+    },
+    {
+      "id": "species.stance.type",
+      "value": "Plantigrade (Human-like, flat feet)"
+    },
+    {
+      "id": "species.limbs.arms",
+      "value": 2
+    },
+    {
+      "id": "species.limbs.legs",
+      "value": 2
+    },
+    {
+      "id": "species.limbs.hands.type",
+      "value": "Human Hands"
+    },
+    {
+      "id": "species.limbs.fingers",
+      "value": 5
+    },
+    {
+      "id": "species.head.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.head.muzzle",
+      "value": "None (Flat face)"
+    },
+    {
+      "id": "species.head.teeth.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.head.tongue.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.head.ears.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.head.horns.count",
+      "value": 0
+    },
+    {
+      "id": "species.head.horns.type",
+      "value": "None"
+    },
+    {
+      "id": "species.skin.type",
+      "value": "Skin (Human-like)"
+    },
+    {
+      "id": "species.skin.color.primary.hex",
+      "value": "#e8c4a0"
+    },
+    {
+      "id": "species.skin.color.primary.name",
+      "value": "Tan"
+    },
+    {
+      "id": "species.skin.pattern",
+      "value": "Solid/Uniform"
+    },
+    {
+      "id": "species.skin.luminescence",
+      "value": 0
+    },
+    {
+      "id": "species.skin.reflectivity",
+      "value": 18
+    },
+    {
+      "id": "species.appendages.tail.count",
+      "value": 0
+    },
+    {
+      "id": "species.appendages.tail.type",
+      "value": "None"
+    },
+    {
+      "id": "species.appendages.wings.count",
+      "value": 0
+    },
+    {
+      "id": "species.appendages.wings.type",
+      "value": "None"
+    },
+    {
+      "id": "species.special.breasts.count",
+      "value": 0
+    },
+    {
+      "id": "species.special.breasts.arrangement",
+      "value": "Standard (2 on chest)"
+    },
+    {
+      "id": "species.special.genitals.count",
+      "value": 1
+    },
+    {
+      "id": "species.special.genitals.type",
+      "value": "Human-like"
+    },
+    {
+      "id": "species.special.eyes.count",
+      "value": 2
+    },
+    {
+      "id": "species.special.eyes.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.special.size.category",
+      "value": "Medium (Human-sized)"
+    },
+    {
+      "id": "species.special.shapeshifting",
+      "value": 0
+    },
+    {
+      "id": "species.special.regeneration",
+      "value": 100
+    },
+    {
+      "id": "species.voice.capability",
+      "value": "Full Human Speech"
+    }
+  ]
+}

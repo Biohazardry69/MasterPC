@@ -14,9 +14,10 @@
   <div class="header">
     <div class="title-row">
       <div class="title">
-        <span class="dot"></span> 
-        <span id="appTitle">MASTER PC</span> 
+        <span class="dot"></span>
+        <span id="appTitle">MASTER PC</span>
         <span class="subtitle" id="appSubtitle">Reality Configuration Console</span>
+        <span class="pill" id="currentSubjectPill" style="margin-left:8px;">Subject: <span id="currentSubjectName" class="subject-name">None</span></span>
       </div>
       <div class="right-ops">
         <span class="pill">Awareness:
@@ -28,18 +29,14 @@
     </div>
     <div class="toolbar">
       <div class="block">
-        <label for="subjectInput">Select Subject</label>
-        <input id="subjectInput" type="text" placeholder="Type a name..." list="knownSubjects" />
-        <datalist id="knownSubjects"></datalist>
-        <button id="selectSubjectBtn">Set</button>
-        <span class="pill">Current: <span id="currentSubject" class="subject-name">None</span></span>
+        <button id="subjectSearchBtn">Search for subjects</button>
       </div>
       <div class="block">
-        <button id="saveBtn" class="secondary">Save Parameters</button>
-        <button id="loadBtn" class="secondary">Load Parameters</button>
+        <button id="exportBtn" class="secondary">Export Subject</button>
+        <button id="importBtn" class="secondary">Import Subject</button>
+        <input id="subjectUpload" type="file" accept="application/json" style="display:none" />
         <button id="lockBtn" class="danger">Lock Parameters</button>
         <span id="lockState" class="pill ghost">Unlocked</span>
-        <input id="configUpload" type="file" accept="application/json" style="display:none" />
       </div>
       <div class="block">
         <button id="expandAllBtn" class="mini">Expand All</button>
@@ -67,7 +64,7 @@
       </div>
 
       <h3>Custom Commands</h3>
-      <textarea id="customCmd" placeholder='E.g. "set physical.height = 182 cm" or "boost charisma +15%"'></textarea>
+      <textarea id="customCmd" placeholder='E.g. "set physical.height.cm = 182" or "boost charisma +15%"'></textarea>
       <div class="upload-row">
         <button id="queueCmdBtn">Queue Command</button>
         <span class="note">Commands are added to the Change Queue. With Auto-Apply ON, they apply immediately.</span>
@@ -78,7 +75,7 @@
     <div class="panel">
       <h3>Parameters</h3>
       <div id="paramsPanel" class="params">
-        <!-- Dynamically generated from JSON -->
+        <!-- Built from def.json -->
       </div>
     </div>
   </div>
@@ -98,646 +95,579 @@
       <div id="appliedList" class="content"></div>
       <div class="controls">
         <button id="clearAppliedBtn">Clear Log</button>
-        <span class="note">Saved locally per subject. Awareness: <span id="awarenessEcho" class="kbd">Everyone</span></span>
+        <span class="note">Awareness: <span id="awarenessEcho" class="kbd">—</span></span>
       </div>
     </div>
   </div>
 </div>
 
-<script>
-/* Master PC Dynamic UI from JSON Schema */
-(function(){
-  const $ = sel => document.querySelector(sel);
-  const $$ = sel => Array.from(document.querySelectorAll(sel));
+<!-- Subject Search Modal -->
+<div id="subjectModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="subjectModalTitle">
+  <div class="modal-backdrop"></div>
+  <div class="modal-card">
+    <div class="modal-header">
+      <div class="modal-title" id="subjectModalTitle">Search for Subjects</div>
+      <button class="mini" id="modalCloseBtn">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="radar-area">
+        <div class="radar">
+          <div class="radar-sweep"></div>
+          <div class="radar-grid"></div>
+        </div>
+      </div>
+      <div class="modal-content-grid">
+        <div class="modal-section">
+          <div class="modal-subtitle">Predefined subjects</div>
+          <div class="modal-row">
+            <input type="text" id="presetFilter" placeholder="Filter by name..." />
+          </div>
+          <div id="presetList" class="preset-list"></div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-subtitle">Select or create</div>
+          <div class="modal-row">
+            <label>Subject name</label>
+            <input type="text" id="subjectNameInput" placeholder="Enter a name or pick from list" />
+          </div>
+          <div class="modal-row">
+            <label>New subject mode</label>
+            <div class="mode-box">
+              <label><input type="radio" name="newMode" value="blank" checked /> Blank parameter set (schema defaults)</label>
+              <label><input type="radio" name="newMode" value="preset" /> Start from preset:
+                <select id="presetSelect"></select>
+              </label>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button id="useSubjectBtn" class="warn">Use This Subject</button>
+            <button id="cancelSubjectBtn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer note">
+      Tip: You can add your own presets by providing subjects/index.json and JSON files for each subject.
+    </div>
+  </div>
+</div>
 
-  let schema = null; // Will hold the loaded JSON schema
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const $$ = s => Array.from(document.querySelectorAll(s));
+
+  // Core state
+  let SCHEMA = null;
   let currentSubject = null;
   let locked = false;
-  const currentParams = new Map();
-  const stagedChanges = new Map();
-  const appliedLog = [];
+
+  // For queue and logs
+  const currentParams = new Map(); // id -> value (string/number/array/object)
+  const stagedChanges = new Map(); // id -> {from,to,label,unit}
+  const appliedLog = []; // items
+
+  // Param registry for schema-driven rendering
+  const PARAM_META = new Map(); // id -> { type, label, unit, default, itemRef }
+  const KNOWN_IDS = new Set();
+  const UNKNOWN_PARAMS = new Map(); // id -> value (from imports that aren't in schema)
+
+  // Predefined subjects (will be loaded from subjects/index.json if present)
+  let PRESETS = []; // [{name, file}, ...]
+  let SELECTED_PRESET = null;
 
   const els = {
-    loadingScreen: $('#loadingScreen'),
-    mainApp: $('#mainApp'),
+    loading: $('#loadingScreen'),
+    app: $('#mainApp'),
+
+    // header/toolbar
     appTitle: $('#appTitle'),
     appSubtitle: $('#appSubtitle'),
-    subjectInput: $('#subjectInput'),
-    selectSubjectBtn: $('#selectSubjectBtn'),
-    currentSubject: $('#currentSubject'),
+    subjectPill: $('#currentSubjectPill'),
+    subjectNameHeader: $('#currentSubjectName'),
+    previewBadge: $('#previewBadge'),
+
     awareness: $('#awarenessSelect'),
     awarenessEcho: $('#awarenessEcho'),
     autoApply: $('#autoApply'),
     applyBtn: $('#applyBtn'),
-    saveBtn: $('#saveBtn'),
-    loadBtn: $('#loadBtn'),
+
+    subjectSearchBtn: $('#subjectSearchBtn'),
+    exportBtn: $('#exportBtn'),
+    importBtn: $('#importBtn'),
+    subjectUpload: $('#subjectUpload'),
+
     lockBtn: $('#lockBtn'),
     lockState: $('#lockState'),
     expandAll: $('#expandAllBtn'),
     collapseAll: $('#collapseAllBtn'),
-    paramsPanel: $('#paramsPanel'),
-    queueList: $('#queueList'),
-    appliedList: $('#appliedList'),
-    clearQueueBtn: $('#clearQueueBtn'),
-    clearAppliedBtn: $('#clearAppliedBtn'),
-    customCmd: $('#customCmd'),
-    queueCmdBtn: $('#queueCmdBtn'),
-    previewBadge: $('#previewBadge'),
+
+    // left panel
     previewImg: $('#previewImg'),
     previewPh: $('#previewPh'),
     imgUpload: $('#imgUpload'),
     clearImgBtn: $('#clearImgBtn'),
-    knownSubjects: $('#knownSubjects'),
-    configUpload: $('#configUpload')
+
+    // params
+    paramsPanel: $('#paramsPanel'),
+
+    // logs
+    queueList: $('#queueList'),
+    appliedList: $('#appliedList'),
+    clearQueueBtn: $('#clearQueueBtn'),
+    clearAppliedBtn: $('#clearAppliedBtn'),
+
+    // commands
+    customCmd: $('#customCmd'),
+    queueCmdBtn: $('#queueCmdBtn'),
+
+    // modal
+    modal: $('#subjectModal'),
+    modalClose: $('#modalCloseBtn'),
+    cancelSubjectBtn: $('#cancelSubjectBtn'),
+    useSubjectBtn: $('#useSubjectBtn'),
+    presetList: $('#presetList'),
+    presetFilter: $('#presetFilter'),
+    presetSelect: $('#presetSelect'),
+    subjectNameInput: $('#subjectNameInput')
   };
 
-  // Load schema and initialize
+  // Boot
+  init();
+
   async function init(){
-    try {
-      // Load the JSON schema
-      const response = await fetch('def.json');
-      if (!response.ok) throw new Error('Failed to load schema');
-      schema = await response.json();
-      
-      // Apply UI config
-      applyUIConfig();
-      
-      // Build the UI
+    try{
+      // Load schema
+      const res = await fetch('def.json');
+      if (!res.ok) throw new Error('Failed to load def.json');
+      SCHEMA = await res.json();
+
+      // Meta UI
+      applyMeta();
+
+      // Build parameter UI from schema
       buildParameterUI();
-      
-      // Hook up event handlers
+
+      // Build Unrecognized group (empty initially)
+      ensureUnrecognizedGroup();
+
+      // Hook controls
       hookToolbar();
-      
-      // Initialize displays
+      hookParamInputs();
+      hookTagInputs();
+      hookRepeaters();
+
       renderQueue();
       renderApplied();
       updateAwarenessEcho();
-      loadKnownSubjects();
       updateLockState();
-      
+
+      // Try to load preset index (optional)
+      loadPresetIndex();
+
       // Show app
-      els.loadingScreen.style.display = 'none';
-      els.mainApp.style.display = '';
-    } catch(err) {
-      console.error('Failed to initialize:', err);
-      els.loadingScreen.innerHTML = `<div style="color:var(--danger)">Failed to load configuration: ${err.message}</div>`;
+      els.loading.style.display = 'none';
+      els.app.style.display = '';
+
+      // Install size resizers
+      installResizers();
+    }catch(err){
+      console.error(err);
+      els.loading.innerHTML = `<div style="color:var(--danger)">Init error: ${err.message}</div>`;
     }
   }
 
-  function applyUIConfig(){
-    // Apply metadata
-    if (schema.meta) {
-      els.appTitle.textContent = schema.meta.title || 'MASTER PC';
-      els.appSubtitle.textContent = schema.meta.subtitle || '';
-      
-      // Set awareness options
-      if (schema.meta.awareness) {
-        els.awareness.innerHTML = '';
-        schema.meta.awareness.options.forEach(opt => {
-          const option = document.createElement('option');
-          option.value = opt;
-          option.textContent = opt;
-          els.awareness.appendChild(option);
-        });
-        els.awareness.value = schema.meta.awareness.default;
-      }
-      
-      els.autoApply.checked = schema.meta.autoApply || false;
-    }
-    
-    // Apply colors if specified
-    if (schema.ui && schema.ui.colors) {
+  function applyMeta(){
+    const meta = SCHEMA.meta || {};
+    els.appTitle.textContent = meta.title || 'Master PC';
+    els.appSubtitle.textContent = meta.subtitle || '';
+
+    // Awareness
+    const aw = meta.awareness || { options: ['Everyone'], default: 'Everyone' };
+    els.awareness.innerHTML = '';
+    (aw.options || []).forEach(v=>{
+      const op=document.createElement('option');
+      op.value=v; op.textContent=v||'—';
+      els.awareness.appendChild(op);
+    });
+    els.awareness.value = aw.default || (aw.options?.[0] || 'Everyone');
+
+    els.autoApply.checked = !!meta.autoApply;
+
+    // Optional UI color overrides
+    if (SCHEMA.ui && SCHEMA.ui.colors){
       const root = document.documentElement;
-      Object.entries(schema.ui.colors).forEach(([key, value]) => {
-        const varName = '--' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
-        root.style.setProperty(varName, value);
+      Object.entries(SCHEMA.ui.colors).forEach(([k,v])=>{
+        const varName = '--' + k.replace(/([A-Z])/g,'-$1').toLowerCase();
+        root.style.setProperty(varName, v);
       });
     }
   }
+
+  // -------------------- Schema UI Builder --------------------
 
   function buildParameterUI(){
     els.paramsPanel.innerHTML = '';
-    
-    if (!schema.parameterGroups) {
-      els.paramsPanel.innerHTML = '<div class="note">No parameters defined</div>';
+    PARAM_META.clear();
+    KNOWN_IDS.clear();
+
+    const groups = SCHEMA.parameterGroups || SCHEMA.parameters || [];
+    if (!groups.length){
+      els.paramsPanel.innerHTML = '<div class="note">No parameters defined in def.json.</div>';
       return;
     }
-    
-    schema.parameterGroups.forEach(group => {
-      const groupEl = renderGroup(group);
-      els.paramsPanel.appendChild(groupEl);
-    });
-    
-    // Hook up all dynamic inputs
-    hookDynamicInputs();
+    groups.forEach(g => els.paramsPanel.appendChild(renderGroup(g)));
   }
 
   function renderGroup(group){
-    const details = document.createElement('details');
-    details.dataset.group = group.id;
-    if (group.expanded) details.open = true;
-    
-    const summary = document.createElement('summary');
-    summary.innerHTML = `<span class="triangle">▶</span> ${escapeHtml(group.label)}`;
-    details.appendChild(summary);
-    
+    const d = document.createElement('details');
+    if (group.expanded) d.open = true;
+    d.dataset.group = group.id || group.key || '';
+    const s = document.createElement('summary');
+    s.innerHTML = `<span class="triangle">▶</span> ${escapeHtml(group.label || group.id || '')}`;
     const body = document.createElement('div');
     body.className = 'group-body';
-    
-    if (group.items) {
-      group.items.forEach(item => {
-        const el = renderItem(item);
-        if (el) body.appendChild(el);
-      });
-    }
-    
-    details.appendChild(body);
-    return details;
+
+    (group.items || group.children || []).forEach(item=>{
+      const el = renderItem(item);
+      if (el) body.appendChild(el);
+    });
+
+    d.appendChild(s);
+    d.appendChild(body);
+    return d;
   }
 
   function renderItem(item){
-    switch(item.type) {
-      case 'group':
-        return renderGroup(item);
-      case 'input':
-        return renderInput(item);
-      case 'range':
-        return renderRange(item);
-      case 'select':
-        return renderSelect(item);
-      case 'tags':
-        return renderTags(item);
-      case 'repeater':
-        return renderRepeater(item);
-      case 'composite':
-        return renderComposite(item);
+    switch(item.type){
+      case 'group': return renderGroup(item);
+      case 'input': return renderInput(item);
+      case 'range': return renderRange(item);
+      case 'select': return renderSelect(item);
+      case 'tags': return renderTags(item);
+      case 'repeater': return renderRepeater(item);
+      case 'composite': return renderComposite(item);
       default:
-        console.warn('Unknown item type:', item.type);
         return null;
     }
   }
 
+  function registerParamMeta(id, meta){
+    if (!id) return;
+    PARAM_META.set(id, meta);
+    KNOWN_IDS.add(id);
+  }
+
   function renderInput(item){
-    const row = document.createElement('div');
-    row.className = 'row';
-    
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'label';
-    labelDiv.textContent = item.label;
-    row.appendChild(labelDiv);
-    
-    const inputDiv = document.createElement('div');
+    const row = rowTemplate(item.label);
     const input = document.createElement('input');
     input.type = item.inputType || 'text';
     input.className = 'param';
     input.dataset.param = item.id;
-    input.dataset.label = item.label;
-    
+    input.dataset.label = item.label || item.id;
     if (item.unit) input.dataset.unit = item.unit;
     if (item.placeholder) input.placeholder = item.placeholder;
     if (item.min !== undefined) input.min = item.min;
     if (item.max !== undefined) input.max = item.max;
     if (item.step !== undefined) input.step = item.step;
-    
-    inputDiv.appendChild(input);
-    row.appendChild(inputDiv);
-    
-    const unitDiv = document.createElement('div');
-    unitDiv.className = 'unit';
-    unitDiv.textContent = item.unit || '';
-    row.appendChild(unitDiv);
-    
-    return row;
+
+    row.control.appendChild(input);
+    row.unit.textContent = item.unit || '';
+
+    registerParamMeta(item.id, {type:'input', inputType: input.type, label:item.label, unit:item.unit, default:item.default, itemRef:item});
+    return row.row;
   }
 
   function renderRange(item){
-    const row = document.createElement('div');
-    row.className = 'row';
-    
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'label';
-    labelDiv.textContent = item.label;
-    row.appendChild(labelDiv);
-    
+    const row = rowTemplate(item.label);
     const sliderRow = document.createElement('div');
     sliderRow.className = 'slider-row';
     sliderRow.style.gridColumn = 'span 2';
-    
+
     const input = document.createElement('input');
     input.type = 'range';
     input.className = 'param';
     input.dataset.param = item.id;
-    input.dataset.label = item.label;
-    input.min = item.min || 0;
-    input.max = item.max || 100;
-    input.step = item.step || 1;
+    input.dataset.label = item.label || item.id;
+    input.min = item.min ?? 0;
+    input.max = item.max ?? 100;
+    input.step = item.step ?? 1;
     if (item.unit) input.dataset.unit = item.unit;
-    
-    const bubble = document.createElement('div');
-    bubble.className = 'value-bubble';
-    bubble.textContent = item.unit || '%';
-    
     sliderRow.appendChild(input);
-    if (item.showValue) sliderRow.appendChild(bubble);
-    row.appendChild(sliderRow);
-    
-    return row;
+
+    if (item.showValue){
+      const bubble = document.createElement('div');
+      bubble.className = 'value-bubble';
+      bubble.textContent = '—';
+      sliderRow.appendChild(bubble);
+    }
+    row.control.replaceWith(sliderRow);
+    registerParamMeta(item.id, {type:'range', label:item.label, unit:item.unit, default:item.default, itemRef:item});
+    return row.row;
   }
 
   function renderSelect(item){
-    const row = document.createElement('div');
-    row.className = 'row';
-    
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'label';
-    labelDiv.textContent = item.label;
-    row.appendChild(labelDiv);
-    
-    const selectDiv = document.createElement('div');
+    const row = rowTemplate(item.label);
     const select = document.createElement('select');
     select.className = 'param';
     select.dataset.param = item.id;
-    select.dataset.label = item.label;
-    
-    if (item.options) {
-      item.options.forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt;
-        option.textContent = opt || '—';
-        select.appendChild(option);
-      });
-    }
-    
-    if (item.default) select.value = item.default;
-    
-    selectDiv.appendChild(select);
-    row.appendChild(selectDiv);
-    
-    const unitDiv = document.createElement('div');
-    unitDiv.className = 'unit';
-    row.appendChild(unitDiv);
-    
-    return row;
+    select.dataset.label = item.label || item.id;
+    (item.options || []).forEach(v=>{
+      const op=document.createElement('option');
+      op.value = v;
+      op.textContent = v || '—';
+      select.appendChild(op);
+    });
+    if (item.default !== undefined) select.value = item.default;
+    row.control.appendChild(select);
+    registerParamMeta(item.id, {type:'select', label:item.label, unit:'', default:item.default, options:item.options || [], itemRef:item});
+    return row.row;
   }
 
   function renderTags(item){
-    const row = document.createElement('div');
-    row.className = 'row';
-    
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'label';
-    labelDiv.textContent = item.label;
-    row.appendChild(labelDiv);
-    
-    const tagInput = document.createElement('div');
-    tagInput.className = 'tag-input';
-    tagInput.dataset.param = item.id;
-    tagInput.dataset.label = item.label;
-    
+    const row = rowTemplate(item.label);
+    const cont = document.createElement('div');
+    cont.className = 'tag-input';
+    cont.dataset.param = item.id;
+    cont.dataset.label = item.label || item.id;
+
     const ghost = document.createElement('span');
     ghost.className = 'tag ghost';
-    ghost.textContent = 'Type then press Enter';
-    tagInput.appendChild(ghost);
-    
+    ghost.textContent = item.placeholder || 'Type then Enter';
+    cont.appendChild(ghost);
+
     const input = document.createElement('input');
     input.type = 'text';
     input.placeholder = item.placeholder || '';
-    tagInput.appendChild(input);
-    
-    row.appendChild(tagInput);
-    
-    const unitDiv = document.createElement('div');
-    unitDiv.className = 'unit';
-    row.appendChild(unitDiv);
-    
-    return row;
+    cont.appendChild(input);
+
+    row.control.appendChild(cont);
+    registerParamMeta(item.id, {type:'tags', label:item.label, unit:'', default:item.default, itemRef:item});
+    return row.row;
   }
 
   function renderRepeater(item){
     const rep = document.createElement('div');
     rep.className = 'repeater' + (item.compact ? ' compact' : '');
     rep.dataset.repeater = item.id;
-    rep.dataset.label = item.label;
-    
-    // Store column definitions
-    rep.dataset.columns = JSON.stringify(item.columns);
-    
+    rep.dataset.label = item.label || item.id;
+    rep.dataset.columns = JSON.stringify(item.columns || []);
+
     const head = document.createElement('div');
     head.className = 'rep-head';
-    
-    const label = document.createElement('span');
-    label.textContent = item.label;
-    head.appendChild(label);
-    
+    head.innerHTML = `<span>${escapeHtml(item.label || 'Repeater')}</span>`;
     const addBtn = document.createElement('button');
     addBtn.className = 'mini rep-add';
     addBtn.textContent = 'Add';
     head.appendChild(addBtn);
-    
+
     const list = document.createElement('div');
     list.className = 'rep-list';
-    
+
     rep.appendChild(head);
     rep.appendChild(list);
-    
-    return rep;
+
+    // Wrap in group-body row look
+    const wrap = document.createElement('div');
+    wrap.className = 'group-body';
+    wrap.appendChild(rep);
+
+    registerParamMeta(item.id, {type:'repeater', label:item.label, unit:'', default:item.default || [], columns:item.columns || [], itemRef:item});
+    return wrap;
   }
 
   function renderComposite(item){
-    const row = document.createElement('div');
-    row.className = 'row';
-    
-    const labelDiv = document.createElement('div');
-    labelDiv.className = 'label';
-    labelDiv.textContent = item.label;
-    row.appendChild(labelDiv);
-    
+    const row = rowTemplate(item.label);
     const composite = document.createElement('div');
     composite.className = 'composite-row';
     composite.style.gridColumn = 'span 2';
-    
-    if (item.items) {
-      item.items.forEach(subItem => {
-        if (subItem.type === 'input') {
-          const input = document.createElement('input');
-          input.type = subItem.inputType || 'text';
-          input.className = 'param';
-          input.dataset.param = subItem.id;
-          input.dataset.label = subItem.label;
-          if (subItem.placeholder) input.placeholder = subItem.placeholder;
-          composite.appendChild(input);
-        }
-      });
-    }
-    
-    row.appendChild(composite);
-    return row;
-  }
 
-  function hookDynamicInputs(){
-    // Hook param inputs
-    $$('.param').forEach(input => {
-      const label = input.dataset.label || input.dataset.param;
-      if (input.type === 'range') {
-        input.addEventListener('input', e => {
-          const val = String(e.target.value);
-          const bubble = findSiblingBubble(e.target);
-          if (bubble) bubble.textContent = val;
-          queueParamChange(e.target, val, label);
-        });
-      } else if (input.type === 'color') {
-        input.addEventListener('input', e => {
-          queueParamChange(e.target, e.target.value, label);
-        });
-      } else {
-        input.addEventListener('change', e => {
-          queueParamChange(e.target, e.target.value, label);
-        });
-      }
-    });
-    
-    // Hook tag inputs
-    $$('.tag-input').forEach(container => {
-      const input = container.querySelector('input');
-      container.addEventListener('click', () => input.focus());
-      input.addEventListener('keydown', e => {
-        if (e.key === 'Enter' && input.value.trim()) {
-          e.preventDefault();
-          addTag(container, input.value.trim());
-          input.value = '';
-          recordTagChange(container);
-        } else if (e.key === 'Backspace' && !input.value) {
-          const last = container.querySelector('.tag:not(.ghost):last-of-type');
-          if (last) { last.remove(); recordTagChange(container); }
-        }
-      });
-    });
-    
-    // Hook repeaters
-    $$('.repeater').forEach(rep => {
-      const addBtn = rep.querySelector('.rep-add');
-      addBtn.addEventListener('click', () => {
-        const columns = JSON.parse(rep.dataset.columns || '[]');
-        addRepeaterRow(rep, columns, {});
-      });
-    });
-  }
-
-  function addRepeaterRow(rep, columns, data){
-    const list = rep.querySelector('.rep-list');
-    const row = document.createElement('div');
-    const colCount = columns.length;
-    row.className = 'rep-row';
-    row.style.gridTemplateColumns = columns.map(() => '1fr').join(' ') + ' auto';
-    
-    columns.forEach(col => {
-      const wrap = document.createElement('div');
-      
-      if (col.type === 'range') {
-        wrap.style.display = 'grid';
-        wrap.style.gridTemplateColumns = '1fr 50px';
-        wrap.style.gap = '6px';
-        
-        const range = document.createElement('input');
-        range.type = 'range';
-        range.min = col.min || 0;
-        range.max = col.max || 100;
-        range.value = data[col.key] || 0;
-        
-        const bubble = document.createElement('div');
-        bubble.className = 'value-bubble';
-        bubble.textContent = range.value;
-        
-        range.addEventListener('input', () => {
-          bubble.textContent = range.value;
-          recordRepeater(rep);
-        });
-        
-        wrap.appendChild(range);
-        wrap.appendChild(bubble);
-      } else {
+    (item.items || []).forEach(sub=>{
+      if (sub.type === 'input'){
         const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = col.label;
-        input.value = data[col.key] || '';
-        input.addEventListener('change', () => recordRepeater(rep));
-        wrap.appendChild(input);
+        input.type = sub.inputType || 'text';
+        input.className = 'param';
+        input.dataset.param = sub.id;
+        input.dataset.label = sub.label || sub.id;
+        if (sub.placeholder) input.placeholder = sub.placeholder;
+        if (sub.min !== undefined) input.min = sub.min;
+        if (sub.max !== undefined) input.max = sub.max;
+        if (sub.step !== undefined) input.step = sub.step;
+        composite.appendChild(input);
+        registerParamMeta(sub.id, {type:'input', inputType: input.type, label:sub.label, unit:sub.unit, default:sub.default, itemRef:sub});
       }
-      
-      row.appendChild(wrap);
     });
-    
-    const del = document.createElement('button');
-    del.className = 'mini danger kill';
-    del.textContent = 'Delete';
-    del.addEventListener('click', () => {
-      row.remove();
-      recordRepeater(rep);
-    });
-    row.appendChild(del);
-    
-    list.appendChild(row);
+
+    row.control.replaceWith(composite);
+    return row.row;
   }
 
-  function recordRepeater(rep){
-    const param = rep.dataset.repeater;
-    const label = rep.dataset.label || param;
-    const columns = JSON.parse(rep.dataset.columns || '[]');
-    const rows = [...rep.querySelectorAll('.rep-row')];
-    
-    const data = rows.map(r => {
-      const obj = {};
-      let colIdx = 0;
-      r.querySelectorAll('input').forEach(inp => {
-        const col = columns[colIdx];
-        if (col) {
-          obj[col.key] = inp.type === 'range' ? Number(inp.value) : inp.value.trim();
-        }
-        colIdx++;
-      });
-      return obj;
-    });
-    
-    const summary = data.map(obj => Object.values(obj).filter(v => String(v).length > 0).join(' | ')).filter(Boolean).join('; ');
-    queueChange(param, summary, label);
-    currentParams.set(param, JSON.stringify(data));
+  function rowTemplate(label){
+    const row = document.createElement('div');
+    row.className = 'row';
+    const lab = document.createElement('div');
+    lab.className = 'label'; lab.textContent = label || '';
+    const ctl = document.createElement('div');
+    const unit = document.createElement('div');
+    unit.className = 'unit';
+    row.append(lab, ctl, unit);
+    return {row, control: ctl, unit};
   }
+
+  // -------------------- Unrecognized Parameters --------------------
+
+  function ensureUnrecognizedGroup(){
+    if ($('#unrecognizedGroup')) return;
+    const d = document.createElement('details');
+    d.id = 'unrecognizedGroup';
+    d.open = true;
+    const s = document.createElement('summary');
+    s.innerHTML = `<span class="triangle">▶</span> Unrecognized Parameters`;
+    const body = document.createElement('div');
+    body.className = 'group-body';
+    d.append(s, body);
+    els.paramsPanel.appendChild(d);
+    d.style.display = 'none';
+  }
+
+  function addUnrecognizedParam(id, value){
+    ensureUnrecognizedGroup();
+    const d = $('#unrecognizedGroup');
+    d.style.display = '';
+    const body = d.querySelector('.group-body');
+
+    const row = document.createElement('div');
+    row.className = 'row';
+    const lab = document.createElement('div');
+    lab.className = 'label'; lab.textContent = id;
+    const ctl = document.createElement('div');
+    const ta = document.createElement('textarea');
+    ta.className = 'unknown-param';
+    ta.dataset.unknownId = id;
+    ta.value = (typeof value === 'string' || typeof value === 'number') ? String(value) : JSON.stringify(value, null, 2);
+    ctl.appendChild(ta);
+    const unit = document.createElement('div');
+    unit.className = 'unit';
+    row.append(lab, ctl, unit);
+    body.appendChild(row);
+    UNKNOWN_PARAMS.set(id, value);
+  }
+
+  function clearUnrecognized(){
+    UNKNOWN_PARAMS.clear();
+    const d = $('#unrecognizedGroup');
+    if (d){
+      d.querySelector('.group-body').innerHTML = '';
+      d.style.display = 'none';
+    }
+  }
+
+  // -------------------- Input Hooks --------------------
 
   function hookToolbar(){
-    els.selectSubjectBtn.addEventListener('click', setSubjectFromInput);
-    els.awareness.addEventListener('change', () => {
+    // Awareness & auto-apply
+    els.awareness.addEventListener('change', ()=>{
       queueChange('meta.awareness', els.awareness.value, 'Awareness');
       updateAwarenessEcho();
     });
-    els.autoApply.addEventListener('change', () => {
+    els.autoApply.addEventListener('change', ()=>{
       queueChange('meta.autoApply', els.autoApply.checked ? 'ON' : 'OFF', 'Auto-apply');
     });
     els.applyBtn.addEventListener('click', applyAllQueued);
-    els.saveBtn.addEventListener('click', exportConfigFile);
-    els.loadBtn.addEventListener('click', () => els.configUpload.click());
-    els.configUpload.addEventListener('change', importConfigFromFile);
+
+    // Export/Import (subject only)
+    els.exportBtn.addEventListener('click', exportSubjectFile);
+    els.importBtn.addEventListener('click', ()=> els.subjectUpload.click());
+    els.subjectUpload.addEventListener('change', handleImportSubjectFile);
+
+    // Lock & expand/collapse
     els.lockBtn.addEventListener('click', toggleLock);
-    els.expandAll.addEventListener('click', () => setAllDetails(true));
-    els.collapseAll.addEventListener('click', () => setAllDetails(false));
+    els.expandAll.addEventListener('click', ()=> setAllDetails(true));
+    els.collapseAll.addEventListener('click', ()=> setAllDetails(false));
+
+    // Logs & commands
     els.clearQueueBtn.addEventListener('click', clearQueue);
     els.clearAppliedBtn.addEventListener('click', clearApplied);
     els.queueCmdBtn.addEventListener('click', queueCommand);
-    els.imgUpload.addEventListener('change', handleImageUpload);
-    els.clearImgBtn.addEventListener('click', clearImage);
-  }
 
-  function setSubjectFromInput(){
-    const name = (els.subjectInput.value || '').trim();
-    if (!name) { alert('Enter a subject name.'); return; }
-    setCurrentSubject(name);
-    loadLocalParamsIntoUI(true);
-    loadSubjectImage();
-    addKnownSubject(name);
-  }
-
-  function setCurrentSubject(name, opts = {}){
-    const { silent = false } = opts;
-    if (!name) return;
-    if (currentSubject && name !== currentSubject && (stagedChanges.size || appliedLog.length) && !silent) {
-      if (!confirm('Switch subject? Unsaved queued changes will be cleared.')) return;
-    }
-    currentSubject = name;
-    els.currentSubject.textContent = name;
-    els.previewBadge.textContent = name;
-    stagedChanges.clear();
-    currentParams.clear();
-    renderQueue();
-    renderApplied();
-  }
-
-  function addKnownSubject(name){
-    if (![...els.knownSubjects.options].some(o => o.value === name)) {
-      const opt = document.createElement('option');
-      opt.value = name;
-      els.knownSubjects.appendChild(opt);
-      persistKnownSubjects();
-    }
-  }
-
-  function loadKnownSubjects(){
-    const ls = JSON.parse(localStorage.getItem('masterpc_subjects') || '[]');
-    ls.forEach(s => addKnownSubject(s));
-  }
-
-  function persistKnownSubjects(){
-    const arr = [...els.knownSubjects.options].map(o => o.value).filter(Boolean);
-    localStorage.setItem('masterpc_subjects', JSON.stringify(arr));
-  }
-
-  function updateAwarenessEcho(){
-    els.awarenessEcho.textContent = els.awareness.value;
-  }
-
-  function toggleLock(){
-    locked = !locked;
-    updateLockState();
-  }
-
-  function updateLockState(){
-    els.lockState.textContent = locked ? 'Locked' : 'Unlocked';
-    els.lockState.style.color = locked ? 'var(--danger)' : 'var(--muted)';
-    $$('#paramsPanel input, #paramsPanel select, #paramsPanel textarea, #paramsPanel button').forEach(el => {
-      el.disabled = locked;
+    // Preview image (no persistence)
+    els.imgUpload.addEventListener('change', e=>{
+      const f = e.target.files?.[0]; if (!f) return;
+      const r = new FileReader();
+      r.onload=()=>{ els.previewImg.src=r.result; els.previewImg.style.display='block'; els.previewPh.style.display='none'; };
+      r.readAsDataURL(f);
     });
-    els.customCmd.disabled = locked;
-    els.queueCmdBtn.disabled = locked;
-    els.applyBtn.disabled = locked;
+    els.clearImgBtn.addEventListener('click', ()=>{
+      els.previewImg.src=''; els.previewImg.style.display='none'; els.previewPh.style.display='block';
+    });
+
+    // Subject modal
+    els.subjectSearchBtn.addEventListener('click', openSubjectModal);
+    els.modalClose.addEventListener('click', closeSubjectModal);
+    els.cancelSubjectBtn.addEventListener('click', closeSubjectModal);
+    els.useSubjectBtn.addEventListener('click', useSubjectFromModal);
+    els.presetFilter.addEventListener('input', filterPresetList);
   }
 
   function setAllDetails(open){
     $$('#paramsPanel details').forEach(d => d.open = open);
   }
 
-  function handleImageUpload(e){
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      els.previewImg.src = reader.result;
-      els.previewImg.style.display = 'block';
-      els.previewPh.style.display = 'none';
-      if (currentSubject) {
-        localStorage.setItem(subjectKey('image'), reader.result);
+  function updateAwarenessEcho(){
+    els.awarenessEcho.textContent = els.awareness.value || '—';
+  }
+
+  function toggleLock(){
+    locked = !locked;
+    updateLockState();
+  }
+  function updateLockState(){
+    els.lockState.textContent = locked ? 'Locked' : 'Unlocked';
+    els.lockState.style.color = locked ? 'var(--danger)' : 'var(--muted)';
+    $$('#paramsPanel input, #paramsPanel select, #paramsPanel textarea, #paramsPanel button').forEach(el => el.disabled = locked);
+    els.customCmd.disabled = locked;
+    els.queueCmdBtn.disabled = locked;
+    els.applyBtn.disabled = locked;
+  }
+
+  function hookParamInputs(){
+    $$('.param').forEach(input=>{
+      const label = input.dataset.label || input.dataset.param;
+      if (input.type === 'range'){
+        input.addEventListener('input', e=>{
+          const val = String(e.target.value);
+          const b = findSiblingBubble(e.target);
+          if (b) b.textContent = val;
+          queueParamChange(e.target, val, label);
+        });
+      }else if (input.type === 'color'){
+        input.addEventListener('input', e=>{
+          queueParamChange(e.target, e.target.value, label);
+        });
+      }else{
+        input.addEventListener('change', e=>{
+          queueParamChange(e.target, e.target.value, label);
+        });
       }
-    };
-    reader.readAsDataURL(file);
+    });
   }
 
-  function clearImage(){
-    els.previewImg.src = '';
-    els.previewImg.style.display = 'none';
-    els.previewPh.style.display = 'block';
-    if (currentSubject) {
-      localStorage.removeItem(subjectKey('image'));
-    }
-  }
-
-  function loadSubjectImage(){
-    if (!currentSubject) { clearImage(); return; }
-    const data = localStorage.getItem(subjectKey('image'));
-    if (data) {
-      els.previewImg.src = data;
-      els.previewImg.style.display = 'block';
-      els.previewPh.style.display = 'none';
-    } else {
-      clearImage();
-    }
-  }
-
-  function subjectKey(suffix){
-    if (!currentSubject) return null;
-    return `masterpc.subject.${currentSubject}.${suffix}`;
-  }
-
-  function findSiblingBubble(rangeEl){
-    const row = rangeEl.closest('.slider-row');
-    if (!row) return null;
-    return row.querySelector('.value-bubble');
+  function hookTagInputs(){
+    $$('.tag-input').forEach(container=>{
+      const input = container.querySelector('input[type="text"]');
+      container.addEventListener('click', ()=> input && input.focus());
+      input?.addEventListener('keydown', e=>{
+        if (e.key === 'Enter' && input.value.trim()){
+          e.preventDefault();
+          addTag(container, input.value.trim());
+          input.value='';
+          recordTagChange(container);
+        }else if (e.key==='Backspace' && !input.value){
+          const last = container.querySelector('.tag:not(.ghost):last-of-type');
+          if (last){ last.remove(); recordTagChange(container); }
+        }
+      });
+    });
   }
 
   function addTag(container, text){
@@ -745,13 +675,8 @@
     tag.className = 'tag';
     tag.textContent = text;
     const x = document.createElement('span');
-    x.className = 'x';
-    x.textContent = '×';
-    x.title = 'Remove';
-    x.addEventListener('click', () => {
-      tag.remove();
-      recordTagChange(container);
-    });
+    x.className = 'x'; x.textContent='×'; x.title='Remove';
+    x.addEventListener('click', ()=>{ tag.remove(); recordTagChange(container); });
     tag.appendChild(x);
     const ghost = container.querySelector('.tag.ghost');
     if (ghost) ghost.remove();
@@ -759,430 +684,562 @@
   }
 
   function recordTagChange(container){
-    const param = container.dataset.param;
-    const label = container.dataset.label || param;
-    const tags = [...container.querySelectorAll('.tag:not(.ghost)')].map(t => t.childNodes[0].nodeValue.trim());
-    queueChange(param, tags.join(', '), label);
+    const id = container.dataset.param;
+    const label = container.dataset.label || id;
+    const tags = [...container.querySelectorAll('.tag:not(.ghost)')].map(t=>t.childNodes[0].nodeValue.trim());
+    queueChange(id, tags, label);
   }
+
+  function hookRepeaters(){
+    $$('.repeater').forEach(rep=>{
+      rep.querySelector('.rep-add').addEventListener('click', ()=>{
+        const cols = JSON.parse(rep.dataset.columns || '[]');
+        addRepeaterRow(rep, cols, {});
+      });
+    });
+  }
+
+  function addRepeaterRow(rep, columns, data){
+    const list = rep.querySelector('.rep-list');
+    const row = document.createElement('div');
+    row.className = 'rep-row';
+    row.style.gridTemplateColumns = columns.map(()=> '1fr').join(' ') + ' auto';
+
+    columns.forEach(col=>{
+      const wrap = document.createElement('div');
+      if (col.type === 'range'){
+        wrap.style.display='grid';
+        wrap.style.gridTemplateColumns='1fr 50px';
+        wrap.style.gap='6px';
+        const r = document.createElement('input');
+        r.type='range'; r.min = col.min ?? 0; r.max = col.max ?? 100; r.step = col.step ?? 1;
+        r.value = Number.isFinite(Number(data[col.key])) ? data[col.key] : 0;
+        const bub = document.createElement('div'); bub.className='value-bubble'; bub.textContent = r.value;
+        r.addEventListener('input', ()=>{ bub.textContent=r.value; recordRepeater(rep); });
+        wrap.append(r, bub);
+      }else{
+        const i = document.createElement('input');
+        i.type='text'; i.placeholder = col.label || ''; i.value = data[col.key] ?? '';
+        i.addEventListener('change', ()=> recordRepeater(rep));
+        wrap.appendChild(i);
+      }
+      row.appendChild(wrap);
+    });
+
+    const del = document.createElement('button');
+    del.className='mini danger kill'; del.textContent='Delete';
+    del.addEventListener('click', ()=>{ row.remove(); recordRepeater(rep); });
+    row.appendChild(del);
+
+    list.appendChild(row);
+  }
+
+  function recordRepeater(rep){
+    const id = rep.dataset.repeater;
+    const label = rep.dataset.label || id;
+    const columns = JSON.parse(rep.dataset.columns || '[]');
+    const rows = [...rep.querySelectorAll('.rep-row')];
+    const data = rows.map(r=>{
+      const obj = {};
+      let idx=0;
+      r.querySelectorAll('input').forEach(inp=>{
+        const col = columns[idx];
+        if (col){
+          obj[col.key] = (inp.type==='range') ? Number(inp.value) : inp.value;
+        }
+        idx++;
+      });
+      return obj;
+    });
+    queueChange(id, data, label);
+  }
+
+  function findSiblingBubble(rangeEl){
+    const row = rangeEl.closest('.slider-row');
+    return row ? row.querySelector('.value-bubble') : null;
+  }
+
+  // -------------------- Queue/Apply --------------------
 
   function queueParamChange(input, val, label){
-    const param = input.dataset.param;
-    queueChange(param, val, label, input.dataset.unit);
+    const id = input.dataset.param;
+    // Convert vals for numeric inputs
+    let to = val;
+    if (input.type === 'number'){
+      const n = parseFloat(val);
+      if (!Number.isNaN(n)) to = n;
+    }else if (input.type === 'range'){
+      to = Number(val);
+    }
+    queueChange(id, to, label, input.dataset.unit);
   }
 
-  function normalizeValForDisplay(val, unit){
-    if (val === null || val === undefined) return '—';
-    if (unit) return `${val} ${unit}`;
-    return String(val);
-  }
-
-  function queueChange(param, to, label, unit){
-    if (!currentSubject) {
-      alert('Select a subject first.');
+  function queueChange(id, to, label, unit){
+    if (!currentSubject){
+      alert('Select a subject first (Search for subjects).');
       return;
     }
-    const from = currentParams.has(param) ? currentParams.get(param) : '—';
-    if (String(from) === String(to)) {
-      stagedChanges.delete(param);
+    const from = currentParams.has(id) ? currentParams.get(id) : '—';
+    // If unchanged remove from queue
+    if (JSON.stringify(from) === JSON.stringify(to)){
+      stagedChanges.delete(id);
       renderQueue();
       return;
     }
-    stagedChanges.set(param, {from, to, label: label || param, unit: unit || ''});
+    stagedChanges.set(id, {from, to, label: label || id, unit: unit || ''});
     renderQueue();
-    if (els.autoApply.checked) {
-      applyChange(param, from, to, label, unit);
-      stagedChanges.delete(param);
+
+    if (els.autoApply.checked){
+      applyChange(id, from, to, label, unit);
+      stagedChanges.delete(id);
       renderQueue();
     }
+  }
+
+  function applyAllQueued(){
+    if (locked){ alert('Parameters are locked. Unlock to apply changes.'); return; }
+    if (!stagedChanges.size){ alert('No queued changes.'); return; }
+    for (const [id, ch] of stagedChanges.entries()){
+      applyChange(id, ch.from, ch.to, ch.label, ch.unit);
+    }
+    stagedChanges.clear();
+    renderQueue();
+  }
+
+  function applyChange(id, from, to, label, unit){
+    currentParams.set(id, to);
+    appliedLog.push({param:id, from, to, label: label || id, unit: unit || '', ts: Date.now()});
+    renderApplied();
   }
 
   function renderQueue(){
     els.queueList.innerHTML = '';
-    if (!stagedChanges.size) {
-      const e = document.createElement('div');
-      e.className = 'note';
-      e.textContent = 'No queued changes.';
-      els.queueList.appendChild(e);
-      return;
+    if (!stagedChanges.size){
+      const e = document.createElement('div'); e.className='note'; e.textContent='No queued changes.';
+      els.queueList.appendChild(e); return;
     }
-    for (const [param, ch] of stagedChanges.entries()) {
-      const div = document.createElement('div');
-      div.className = 'change';
+    for (const [id, ch] of stagedChanges.entries()){
+      const div = document.createElement('div'); div.className='change';
       div.innerHTML = `<span class="verb">SET</span> <span class="path">${escapeHtml(ch.label)}</span>
-        <span class="from">[${escapeHtml(normalizeValForDisplay(ch.from, ch.unit))}]</span>
-        → <span class="to">${escapeHtml(normalizeValForDisplay(ch.to, ch.unit))}</span>`;
+        <span class="from">[${escapeHtml(displayVal(ch.from, ch.unit))}]</span>
+        → <span class="to">${escapeHtml(displayVal(ch.to, ch.unit))}</span>`;
       els.queueList.appendChild(div);
     }
   }
 
   function renderApplied(){
     els.appliedList.innerHTML = '';
-    if (!appliedLog.length) {
-      const e = document.createElement('div');
-      e.className = 'note';
-      e.textContent = 'No applied changes yet.';
-      els.appliedList.appendChild(e);
-      return;
+    if (!appliedLog.length){
+      const e = document.createElement('div'); e.className='note'; e.textContent='No applied changes yet.';
+      els.appliedList.appendChild(e); return;
     }
-    appliedLog.slice(-500).forEach(item => {
-      const div = document.createElement('div');
-      div.className = 'change';
-      if (item.cmd) {
-        div.innerHTML = `<span class="verb">CMD</span> <span class="path">${escapeHtml(item.cmd)}</span>
-          <span class="from ghost">@${new Date(item.ts).toLocaleTimeString()}</span>`;
-      } else {
-        div.innerHTML = `<span class="verb">APPLY</span> <span class="path">${escapeHtml(item.label)}</span>
-          <span class="from">[${escapeHtml(normalizeValForDisplay(item.from, item.unit))}]</span>
-          → <span class="to">${escapeHtml(normalizeValForDisplay(item.to, item.unit))}</span>
-          <span class="from ghost">@${new Date(item.ts).toLocaleTimeString()}</span>`;
+    appliedLog.slice(-500).forEach(it=>{
+      const div = document.createElement('div'); div.className='change';
+      if (it.cmd){
+        div.innerHTML = `<span class="verb">CMD</span> <span class="path">${escapeHtml(it.cmd)}</span>
+          <span class="from ghost">@${new Date(it.ts).toLocaleTimeString()}</span>`;
+      }else{
+        div.innerHTML = `<span class="verb">APPLY</span> <span class="path">${escapeHtml(it.label)}</span>
+          <span class="from">[${escapeHtml(displayVal(it.from, it.unit))}]</span>
+          → <span class="to">${escapeHtml(displayVal(it.to, it.unit))}</span>
+          <span class="from ghost">@${new Date(it.ts).toLocaleTimeString()}</span>`;
       }
       els.appliedList.appendChild(div);
     });
   }
 
-  function applyAllQueued(){
-    if (locked) {
-      alert('Parameters are locked. Unlock to apply changes.');
-      return;
-    }
-    if (!stagedChanges.size) {
-      alert('No queued changes.');
-      return;
-    }
-    for (const [param, ch] of stagedChanges.entries()) {
-      applyChange(param, ch.from, ch.to, ch.label, ch.unit);
-    }
-    stagedChanges.clear();
-    renderQueue();
-    persistSubjectState();
-  }
-
-  function applyChange(param, from, to, label, unit){
-    currentParams.set(param, to);
-    appliedLog.push({param, from, to, label: label || param, unit: unit || '', ts: Date.now()});
-    renderApplied();
-  }
-
-  function clearQueue(){
-    stagedChanges.clear();
-    renderQueue();
-  }
-
-  function clearApplied(){
-    if (!confirm('Clear applied log?')) return;
-    appliedLog.length = 0;
-    renderApplied();
-  }
+  function clearQueue(){ stagedChanges.clear(); renderQueue(); }
+  function clearApplied(){ if (confirm('Clear applied log?')) { appliedLog.length=0; renderApplied(); } }
 
   function queueCommand(){
     const txt = (els.customCmd.value || '').trim();
-    if (!txt) { alert('Type a command.'); return; }
-    if (!currentSubject) { alert('Select a subject first.'); return; }
-    if (els.autoApply.checked) {
-      appliedLog.push({cmd: txt, ts: Date.now()});
-      renderApplied();
-    } else {
-      stagedChanges.set(`cmd.${Date.now()}.${Math.random().toString(36).slice(2)}`, {from: '—', to: txt, label: 'Command', unit: ''});
+    if (!txt){ alert('Type a command.'); return; }
+    if (!currentSubject){ alert('Select a subject first.'); return; }
+    if (els.autoApply.checked){
+      appliedLog.push({cmd: txt, ts: Date.now()}); renderApplied();
+    }else{
+      stagedChanges.set(`cmd.${Date.now()}`, {from:'—', to: txt, label:'Command', unit:''});
       renderQueue();
     }
-    els.customCmd.value = '';
+    els.customCmd.value='';
   }
 
-  function persistSubjectState(){
-    const obj = {};
-    currentParams.forEach((v, k) => obj[k] = v);
-    const state = {
-      subject: currentSubject,
-      params: obj,
-      applied: appliedLog,
-      awareness: els.awareness.value,
-      autoApply: els.autoApply.checked
-    };
-    localStorage.setItem(subjectKey('state'), JSON.stringify(state));
+  function displayVal(val, unit){
+    if (val === null || val === undefined) return '—';
+    if (Array.isArray(val) || typeof val === 'object') return '[...]';
+    if (unit) return `${val} ${unit}`;
+    return String(val);
   }
 
-  function loadLocalParamsIntoUI(silent = false){
-    if (!currentSubject) { if (!silent) alert('Select a subject first.'); return; }
-    const raw = localStorage.getItem(subjectKey('state'));
-    if (!raw) { if (!silent) alert('No saved parameters for this subject.'); resetParamUI(); return; }
-    try {
-      const state = JSON.parse(raw);
-      els.awareness.value = state.awareness || schema.meta.awareness.default;
-      els.autoApply.checked = !!state.autoApply;
-      updateAwarenessEcho();
-      currentParams.clear();
-      for (const k in state.params) { currentParams.set(k, state.params[k]); }
-      applyParamsToInputs();
-      appliedLog.length = 0;
-      (state.applied || []).forEach(x => appliedLog.push(x));
-      renderApplied();
-      stagedChanges.clear(); renderQueue();
-      if (!silent) alert('Parameters loaded from local storage.');
-    } catch(err) {
-      console.error(err);
-      if (!silent) alert('Failed to load parameters.');
+  // -------------------- Defaults & Value Application --------------------
+
+  function defaultForId(id){
+    const meta = PARAM_META.get(id);
+    if (!meta) return undefined;
+    if (meta.default !== undefined) return meta.default;
+    // sensible fallbacks by type based on DOM
+    if (meta.type === 'range'){
+      const el = paramInputById(id);
+      if (el) return Number(el.min || 0);
+      return 0;
     }
+    if (meta.type === 'select'){
+      const el = paramInputById(id);
+      if (el && el.options && el.options.length) return el.options[0].value;
+      return '';
+    }
+    if (meta.type === 'tags') return [];
+    if (meta.type === 'repeater') return [];
+    if (meta.type === 'input' && meta.inputType === 'color') return '#000000';
+    return '';
   }
 
-  function resetParamUI(){
-    $$('.param').forEach(el => {
-      if (el.type === 'range') { 
-        el.value = el.min || 0; 
-        const b = findSiblingBubble(el); 
-        if (b) b.textContent = '—'; 
-      } else if (el.type === 'color') { 
-        el.value = '#000000'; 
-      } else { 
-        el.value = ''; 
-      }
-    });
-    $$('.tag-input').forEach(ti => {
-      ti.querySelectorAll('.tag:not(.ghost)').forEach(t => t.remove());
-    });
-    $$('.repeater .rep-list').forEach(list => list.innerHTML = '');
+  function paramInputById(id){
+    return document.querySelector(`.param[data-param="${cssAttr(id)}"]`);
   }
 
-  function applyParamsToInputs(){
-    $$('.param').forEach(el => {
-      const p = el.dataset.param;
-      if (!currentParams.has(p)) return;
-      let v = currentParams.get(p);
-      if (el.type === 'range') {
-        const min = Number(el.min || 0), max = Number(el.max || 100);
-        let n = Number(v);
-        if (Number.isFinite(n)) {
-          if (n < min) n = min;
-          if (n > max) n = max;
-          el.value = String(n);
-        } else {
-          el.value = String(min);
-        }
-        const b = findSiblingBubble(el);
-        if (b) b.textContent = el.value;
-      } else {
-        el.value = v;
-      }
-    });
-    $$('.tag-input').forEach(ti => {
-      const p = ti.dataset.param;
-      if (!currentParams.has(p)) return;
-      ti.querySelectorAll('.tag:not(.ghost)').forEach(t => t.remove());
-      const txt = String(currentParams.get(p) || '');
-      if (!txt) return;
-      txt.split(',').map(s => s.trim()).filter(Boolean).forEach(t => addTag(ti, t));
-    });
-    $$('.repeater').forEach(rep => {
-      const p = rep.dataset.repeater;
+  function tagsContainerById(id){
+    return document.querySelector(`.tag-input[data-param="${cssAttr(id)}"]`);
+  }
+
+  function repeaterById(id){
+    return document.querySelector(`.repeater[data-repeater="${cssAttr(id)}"]`);
+  }
+
+  // set value into UI (no queuing/logging)
+  function setValueSilent(id, value){
+    // recognized inputs
+    const inp = paramInputById(id);
+    const tagCont = tagsContainerById(id);
+    const rep = repeaterById(id);
+
+    if (rep && Array.isArray(value)){
+      const cols = JSON.parse(rep.dataset.columns || '[]');
       rep.querySelector('.rep-list').innerHTML = '';
-      if (!currentParams.has(p)) return;
-      const stored = currentParams.get(p);
-      try {
-        const arr = JSON.parse(stored);
-        const columns = JSON.parse(rep.dataset.columns || '[]');
-        if (Array.isArray(arr)) {
-          arr.forEach(item => addRepeaterRow(rep, columns, item));
+      value.forEach(row => addRepeaterRow(rep, cols, row || {}));
+      // update currentParams
+      currentParams.set(id, value);
+      return;
+    }
+    if (tagCont){
+      // expect array or string
+      tagCont.querySelectorAll('.tag:not(.ghost)').forEach(t=>t.remove());
+      if (Array.isArray(value)){
+        value.forEach(v => addTag(tagCont, String(v)));
+      }else if (typeof value === 'string'){
+        value.split(',').map(s=>s.trim()).filter(Boolean).forEach(v => addTag(tagCont, v));
+      }
+      currentParams.set(id, Array.isArray(value) ? value : String(value));
+      return;
+    }
+    if (inp){
+      if (inp.type === 'range'){
+        const n = Number(value);
+        if (!Number.isNaN(n)){
+          inp.value = String(n);
+          const b = findSiblingBubble(inp); if (b) b.textContent = inp.value;
+          currentParams.set(id, n);
         }
-      } catch(_) {}
-    });
+      }else if (inp.type === 'number'){
+        if (value === '' || value === null || value === undefined){
+          inp.value = '';
+          currentParams.set(id, '');
+        }else{
+          const n = Number(value);
+          inp.value = Number.isNaN(n) ? String(value) : String(n);
+          currentParams.set(id, Number.isNaN(n) ? String(value) : n);
+        }
+      }else{
+        inp.value = String(value ?? '');
+        currentParams.set(id, inp.value);
+      }
+      return;
+    }
+
+    // unknown ids go to Unrecognized
+    addUnrecognizedParam(id, value);
   }
 
-  function serializeUIToConfig(){
-    const paramsObj = {};
+  function applyDefaultsForAll(){
+    // recognized items
+    for (const id of KNOWN_IDS){
+      const def = defaultForId(id);
+      setValueSilent(id, def);
+    }
+    // clear unknown
+    clearUnrecognized();
+  }
 
-    $$('.param').forEach(el => {
-      const path = el.dataset.param;
-      let include = true;
-      let val = el.value;
+  // -------------------- Export / Import Subject (id/value pairs only) --------------------
 
-      if (el.type === 'number') {
-        if (el.value === '') include = false;
-        else {
-          const n = parseFloat(el.value);
-          if (Number.isFinite(n)) val = n; else include = false;
-        }
-      } else if (el.type === 'range') {
+  function exportSubjectFile(){
+    if (!currentSubject){ alert('Select a subject first.'); return; }
+    const pairs = [];
+
+    // recognized .param (simple inputs)
+    $$('.param').forEach(el=>{
+      const id = el.dataset.param;
+      const meta = PARAM_META.get(id);
+      if (!meta) return;
+      let val;
+      if (meta.type === 'range'){
         val = Number(el.value);
-      } else if (el.type === 'date') {
-        if (!el.value) include = false;
-      } else {
-        if (el.value === '') include = false;
+      }else if (meta.type === 'input' && el.type === 'number'){
+        if (el.value === '') return; // skip empty
+        const n = Number(el.value);
+        val = Number.isNaN(n) ? el.value : n;
+      }else if (meta.type === 'input' && el.type === 'color'){
+        val = el.value || '#000000';
+      }else{
+        if (el.value === '') return; // skip empty strings for compact exports
+        val = el.value;
       }
-
-      if (include) setByPath(paramsObj, path, val);
+      pairs.push({ id, value: val });
     });
 
-    $$('.tag-input').forEach(ti => {
-      const path = ti.dataset.param;
+    // tags -> arrays
+    $$('.tag-input').forEach(ti=>{
+      const id = ti.dataset.param;
       const tags = [...ti.querySelectorAll('.tag:not(.ghost)')].map(t => t.childNodes[0].nodeValue.trim());
-      if (tags.length) setByPath(paramsObj, path, tags);
+      if (tags.length) pairs.push({ id, value: tags });
     });
 
-    $$('.repeater').forEach(rep => {
-      const path = rep.dataset.repeater;
-      const columns = JSON.parse(rep.dataset.columns || '[]');
+    // repeaters -> arrays of objects
+    $$('.repeater').forEach(rep=>{
+      const id = rep.dataset.repeater;
+      const cols = JSON.parse(rep.dataset.columns || '[]');
       const rows = [...rep.querySelectorAll('.rep-row')];
       if (!rows.length) return;
-      const arr = rows.map(r => {
-        const obj = {};
-        let idx = 0;
-        r.querySelectorAll('input').forEach(inp => {
-          const col = columns[idx];
-          if (col) {
-            const v = (inp.type === 'range') ? Number(inp.value) : inp.value;
-            obj[col.key] = v;
+      const arr = rows.map(r=>{
+        const obj={};
+        let idx=0;
+        r.querySelectorAll('input').forEach(inp=>{
+          const col = cols[idx];
+          if (col){
+            obj[col.key] = (inp.type==='range') ? Number(inp.value) : inp.value;
           }
           idx++;
         });
         return obj;
       });
-      if (arr.length) setByPath(paramsObj, path, arr);
+      pairs.push({ id, value: arr });
     });
 
-    const meta = {
-      subject: currentSubject || null,
-      awareness: els.awareness.value,
-      autoApply: els.autoApply.checked
-    };
-    const imgData = (currentSubject && localStorage.getItem(subjectKey('image'))) || null;
-    if (imgData) meta.portrait = imgData;
+    // unknowns (textarea) -> try JSON, else string
+    $$('.unknown-param').forEach(ta=>{
+      const id = ta.dataset.unknownId;
+      const txt = ta.value;
+      let val;
+      try{ val = JSON.parse(txt); }catch{ val = txt; }
+      pairs.push({ id, value: val });
+    });
 
-    return { meta, params: paramsObj };
-  }
-
-  function exportConfigFile(){
-    const cfg = serializeUIToConfig();
-    const json = JSON.stringify(cfg, null, 2);
-    const blob = new Blob([json], {type: 'application/json'});
-    const nameSlug = (currentSubject || 'subject').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'subject';
-    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-    const filename = `masterpc-${nameSlug}-${stamp}.json`;
+    const out = { values: pairs };
+    const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
+    const slug = (currentSubject || 'subject').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'subject';
+    const stamp = new Date().toISOString().replace(/[:.]/g,'-');
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = filename;
+    a.download = `subject-${slug}-${stamp}.json`;
     document.body.appendChild(a);
     a.click();
-    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
   }
 
-  function importConfigFromFile(e){
-    const file = e.target.files && e.target.files[0];
+  function handleImportSubjectFile(e){
+    const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
-    if (locked) { alert('Unlock parameters before loading a config.'); return; }
-    const reader = new FileReader();
-    reader.onload = () => {
-      try {
-        const cfg = JSON.parse(reader.result);
-        applyConfigObject(cfg);
-        alert('Config loaded. Values have been queued; click Apply to commit (or turn on Auto-Apply).');
-      } catch(err) {
+    if (locked){ alert('Unlock parameters before importing.'); return; }
+    const r = new FileReader();
+    r.onload = ()=>{
+      try{
+        const data = JSON.parse(r.result);
+        const pairs = normalizeSubjectData(data);
+        importPairsApply(pairs);
+        alert('Subject values imported.');
+      }catch(err){
         console.error(err);
-        alert('Invalid JSON file.');
+        alert('Invalid subject.json');
       }
     };
-    reader.readAsText(file);
+    r.readAsText(file);
   }
 
-  function applyConfigObject(cfg){
-    const meta = cfg.meta || {};
-    if (!currentSubject) {
-      setCurrentSubject(meta.subject || 'Subject', { silent: true });
-      addKnownSubject(currentSubject);
+  // Accepts:
+  // { values: [{id, value}...] } OR
+  // [ {id,value}, ... ] OR
+  // { "id1": value1, "id2": value2, ... }
+  function normalizeSubjectData(data){
+    let pairs = [];
+    if (Array.isArray(data)){
+      pairs = data;
+    }else if (data && Array.isArray(data.values)){
+      pairs = data.values;
+    }else if (data && typeof data === 'object'){
+      pairs = Object.entries(data).map(([id, value])=>({id, value}));
+    }
+    // filter out invalid
+    return pairs.filter(p => p && typeof p.id === 'string');
+  }
+
+  function importPairsApply(pairs){
+    // Build id->value map
+    const map = new Map(pairs.map(p => [p.id, p.value]));
+
+    // Clear unknowns
+    clearUnrecognized();
+
+    // Apply defaults for all schema ids first
+    for (const id of KNOWN_IDS){
+      const v = map.has(id) ? map.get(id) : defaultForId(id);
+      setValueSilent(id, v);
     }
 
-    if (meta.awareness) els.awareness.value = meta.awareness;
-    if (typeof meta.autoApply === 'boolean') els.autoApply.checked = meta.autoApply;
-    updateAwarenessEcho();
-    if (meta.portrait) {
-      els.previewImg.src = meta.portrait;
-      els.previewImg.style.display = 'block';
-      els.previewPh.style.display = 'none';
-      if (currentSubject) { localStorage.setItem(subjectKey('image'), meta.portrait); }
-    }
-
-    const source = cfg.params ? cfg.params : cfg;
-    const flat = flattenObject(source);
-
-    for (const [path, val] of Object.entries(flat)) {
-      const rep = document.querySelector(`.repeater[data-repeater="${cssEscape(path)}"]`);
-      if (rep && Array.isArray(val)) {
-        rep.querySelector('.rep-list').innerHTML = '';
-        const columns = JSON.parse(rep.dataset.columns || '[]');
-        val.forEach(item => addRepeaterRow(rep, columns, item));
-        recordRepeater(rep);
-        continue;
-      }
-      
-      const tag = document.querySelector(`.tag-input[data-param="${cssEscape(path)}"]`);
-      if (tag) {
-        tag.querySelectorAll('.tag:not(.ghost)').forEach(t => t.remove());
-        if (Array.isArray(val)) {
-          val.forEach(v => addTag(tag, String(v)));
-        } else if (typeof val === 'string') {
-          val.split(',').map(s => s.trim()).filter(Boolean).forEach(v => addTag(tag, v));
-        }
-        recordTagChange(tag);
-        continue;
-      }
-    }
-
-    for (const [path, val] of Object.entries(flat)) {
-      const input = document.querySelector(`.param[data-param="${cssEscape(path)}"]`);
-      if (!input) continue;
-      if (input.type === 'range') {
-        const n = Number(val);
-        if (!Number.isNaN(n)) {
-          input.value = String(n);
-          const b = findSiblingBubble(input); if (b) b.textContent = String(n);
-        }
-        input.dispatchEvent(new Event('input', {bubbles: true}));
-      } else if (input.type === 'number') {
-        if (val === '' || val === null || val === undefined) continue;
-        const n = Number(val);
-        if (!Number.isNaN(n)) input.value = String(n);
-        else input.value = String(val);
-        input.dispatchEvent(new Event('change', {bubbles: true}));
-      } else if (input.type === 'color') {
-        input.value = String(val || '#000000');
-        input.dispatchEvent(new Event('input', {bubbles: true}));
-      } else {
-        input.value = String(val);
-        input.dispatchEvent(new Event('change', {bubbles: true}));
+    // Any id present in file but not in schema -> unrecognized
+    for (const {id, value} of pairs){
+      if (!KNOWN_IDS.has(id)){
+        addUnrecognizedParam(id, value);
       }
     }
   }
 
-  function flattenObject(obj, prefix = ''){
-    const out = {};
-    for (const [k, v] of Object.entries(obj || {})) {
-      const path = prefix ? `${prefix}.${k}` : k;
-      if (v && typeof v === 'object' && !Array.isArray(v)) {
-        Object.assign(out, flattenObject(v, path));
-      } else {
-        out[path] = v;
-      }
+  // -------------------- Subject Modal --------------------
+
+  async function loadPresetIndex(){
+    // Try to load optional subjects/index.json, fallback to empty
+    try{
+      const r = await fetch('subjects/index.json', {cache:'no-store'});
+      if (!r.ok) throw new Error();
+      const arr = await r.json();
+      // Expected format: [{name, file}] or {subjects: [...]}
+      const list = Array.isArray(arr) ? arr : (Array.isArray(arr.subjects) ? arr.subjects : []);
+      PRESETS = list.filter(x => x && x.name && x.file);
+    }catch(_){
+      PRESETS = []; // user will populate later
     }
-    return out;
+    rebuildPresetList();
+    rebuildPresetSelect();
   }
 
-  function setByPath(obj, path, val){
-    const parts = String(path).split('.');
-    let cur = obj;
-    for (let i = 0; i < parts.length - 1; i++) {
-      const p = parts[i];
-      if (!cur[p] || typeof cur[p] !== 'object') cur[p] = {};
-      cur = cur[p];
+  function openSubjectModal(){
+    rebuildPresetList();
+    rebuildPresetSelect();
+    els.subjectNameInput.value = currentSubject || '';
+    SELECTED_PRESET = null;
+    els.modal.classList.remove('hidden');
+  }
+  function closeSubjectModal(){
+    els.modal.classList.add('hidden');
+  }
+
+  function filterPresetList(){
+    const q = (els.presetFilter.value || '').toLowerCase();
+    $$('.preset-card').forEach(card=>{
+      const name = (card.dataset.name || '').toLowerCase();
+      card.style.display = name.includes(q) ? '' : 'none';
+    });
+  }
+
+  function rebuildPresetList(){
+    els.presetList.innerHTML = '';
+    if (!PRESETS.length){
+      const note = document.createElement('div');
+      note.className='note';
+      note.textContent = 'No predefined subjects found.';
+      els.presetList.appendChild(note);
+      return;
     }
-    cur[parts[parts.length - 1]] = val;
+    PRESETS.forEach((p,i)=>{
+      const card = document.createElement('button');
+      card.className = 'preset-card';
+      card.dataset.name = p.name;
+      card.innerHTML = `<div class="pc-title">${escapeHtml(p.name)}</div><div class="pc-sub">${escapeHtml(p.file)}</div>`;
+      card.addEventListener('click', ()=>{
+        SELECTED_PRESET = p;
+        els.subjectNameInput.value = p.name;
+        // highlight selection
+        $$('.preset-card').forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+      });
+      els.presetList.appendChild(card);
+    });
+    filterPresetList();
   }
 
-  function cssEscape(s){
-    return String(s).replace(/["\\]/g, '\\$&');
+  function rebuildPresetSelect(){
+    els.presetSelect.innerHTML = '';
+    const optNone = document.createElement('option');
+    optNone.value=''; optNone.textContent='— Select preset —';
+    els.presetSelect.appendChild(optNone);
+    PRESETS.forEach(p=>{
+      const op = document.createElement('option');
+      op.value = p.file; op.textContent = p.name;
+      els.presetSelect.appendChild(op);
+    });
   }
 
+  async function useSubjectFromModal(){
+    const name = (els.subjectNameInput.value || '').trim();
+    if (!name){ alert('Enter a subject name or pick one.'); return; }
+
+    // Determine mode
+    const mode = (document.querySelector('input[name="newMode"]:checked')?.value) || 'blank';
+    const presetFileFromSelect = els.presetSelect.value || '';
+
+    // If a predefined card is selected, load it
+    if (SELECTED_PRESET){
+      await setCurrentSubjectAndLoad(name, SELECTED_PRESET.file);
+      closeSubjectModal();
+      return;
+    }
+
+    // New subject by name
+    if (mode === 'preset' && presetFileFromSelect){
+      await setCurrentSubjectAndLoad(name, presetFileFromSelect);
+    }else{
+      setCurrentSubject(name);
+      // Blank: apply schema defaults, clear unknowns
+      applyDefaultsForAll();
+      clearUnrecognized();
+    }
+    closeSubjectModal();
+  }
+
+  async function setCurrentSubjectAndLoad(name, file){
+    setCurrentSubject(name);
+    try{
+      const r = await fetch(file, {cache:'no-store'});
+      if (!r.ok) throw new Error(`Failed to load ${file}`);
+      const data = await r.json();
+      const pairs = normalizeSubjectData(data);
+      importPairsApply(pairs);
+    }catch(err){
+      console.error(err);
+      alert(err.message || 'Failed to load preset.');
+      // Fall back to defaults if preset load fails
+      applyDefaultsForAll();
+    }
+  }
+
+  function setCurrentSubject(name){
+    currentSubject = name;
+    els.subjectNameHeader.textContent = name || 'None';
+    els.previewBadge.textContent = name || 'No Subject';
+    // reset queues and logs for new subject context
+    stagedChanges.clear();
+    renderQueue();
+    // don't clear applied log to keep session history, but we can if desired
+  }
+
+  // -------------------- Utilities --------------------
+
+  function cssAttr(s){ return String(s).replace(/["\\]/g, '\\$&'); }
   function escapeHtml(s){
-    return String(s).replace(/[&<>"'`]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;'}[c]));
+    return String(s).replace(/[&<>"'`]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[c]));
   }
+
+  // -------------------- Resizers (same approach as before) --------------------
 
   function installResizers(){
     const grid = document.querySelector('.grid');
@@ -1191,135 +1248,94 @@
     const app = document.querySelector('.app');
     if (!grid || !footer || !header || !app) return;
 
-    // 1) Vertical resizer between Live Preview (left) and Parameters (right)
-    const vMain = document.createElement('div');
-    vMain.className = 'resizer resizer-col';
-    grid.appendChild(vMain);
+    // Vars ensure defaults
+    if (!getComputedStyle(document.documentElement).getPropertyValue('--col-left')) document.documentElement.style.setProperty('--col-left','360px');
+    if (!getComputedStyle(document.documentElement).getPropertyValue('--footer-h')) document.documentElement.style.setProperty('--footer-h','240px');
+    if (!getComputedStyle(document.documentElement).getPropertyValue('--logs-left-px')) document.documentElement.style.setProperty('--logs-left-px','50%');
+
+    // vertical between left/right
+    const vMain = document.createElement('div'); vMain.className='resizer resizer-col'; grid.appendChild(vMain);
     makeDrag(vMain, {
-      onStart(){
-        const leftPx = pxVar('--col-left', 360);
-        return { leftPx };
-      },
-      onMove(dx, dy, start){
-        const rect = grid.getBoundingClientRect();
-        const minLeft = 240;                  // min left panel width
-        const minRight = 360;                 // min right panel width
-        let newLeft = start.leftPx + dx;
-        newLeft = Math.max(minLeft, Math.min(newLeft, rect.width - 12 /*gap*/ - minRight));
-        setCssVar('--col-left', newLeft + 'px');
+      onStart(){ return { leftPx: pxVar('--col-left', 360) }; },
+      onMove(dx){ const rect = grid.getBoundingClientRect();
+        const minLeft=240, minRight=360;
+        let newLeft = pxVar('--col-left', 360) + dx;
+        newLeft = Math.max(minLeft, Math.min(newLeft, rect.width - 12 - minRight));
+        setCssVar('--col-left', newLeft+'px');
       }
     });
 
-    // 2) Horizontal resizer between center grid and footer
-    const hMain = document.createElement('div');
-    hMain.className = 'resizer resizer-row';
-    footer.appendChild(hMain); // positioned at top edge of footer
+    // horizontal between grid/footer
+    const hMain = document.createElement('div'); hMain.className='resizer resizer-row'; footer.appendChild(hMain);
     makeDrag(hMain, {
-      onStart(){
-        const footerH = pxVar('--footer-h', 240);
-        return { footerH };
-      },
-      onMove(dx, dy, start){
-        const appRect = app.getBoundingClientRect();
+      onStart(){ return { footerH: pxVar('--footer-h', 240) }; },
+      onMove(dx, dy, start){ const appRect = app.getBoundingClientRect();
         const headerH = header.getBoundingClientRect().height;
         const minFooter = 140;
-        const maxFooter = Math.max(minFooter, appRect.height - headerH - 220); // ensure grid keeps space
-        // Dragging up reduces footer height, down increases
+        const maxFooter = Math.max(minFooter, appRect.height - headerH - 220);
         let newH = start.footerH - dy;
         newH = Math.max(minFooter, Math.min(newH, maxFooter));
-        setCssVar('--footer-h', newH + 'px');
+        setCssVar('--footer-h', newH+'px');
       }
     });
 
-    // 3) Vertical resizer between Change Queue and Applied Log inside footer
-    const vLogs = document.createElement('div');
-    vLogs.className = 'resizer resizer-col-logs';
-    footer.appendChild(vLogs);
+    // vertical between logs
+    const vLogs = document.createElement('div'); vLogs.className='resizer resizer-col-logs'; footer.appendChild(vLogs);
     makeDrag(vLogs, {
-      onStart(){
-        // current left log width in px (from computed var or from DOM)
-        const leftPx = logsLeftPixels(footer);
-        return { leftPx };
-      },
-      onMove(dx, dy, start){
-        const rect = footer.getBoundingClientRect();
-        const min = 260;                       // min width for each log column
-        let newLeft = start.leftPx + dx;
-        newLeft = Math.max(min, Math.min(newLeft, rect.width - 12 /*gap*/ - min));
-        setCssVar('--logs-left-px', newLeft + 'px');
+      onStart(){ return { leftPx: logsLeftPixels(footer) }; },
+      onMove(dx){ const rect = footer.getBoundingClientRect();
+        const min=260; let newLeft = logsLeftPixels(footer) + dx;
+        newLeft = Math.max(min, Math.min(newLeft, rect.width - 12 - min));
+        setCssVar('--logs-left-px', newLeft+'px');
       }
     });
 
-    // Keep things reasonable on window resize
     window.addEventListener('resize', ()=>{
       const rect = grid.getBoundingClientRect();
-      const left = pxVar('--col-left', 360);
+      const left = pxVar('--col-left',360);
       const clampedLeft = Math.max(240, Math.min(left, rect.width - 12 - 360));
-      if (clampedLeft !== left) setCssVar('--col-left', clampedLeft + 'px');
+      if (clampedLeft!==left) setCssVar('--col-left', clampedLeft+'px');
 
-      // Clamp logs split too
       const fRect = footer.getBoundingClientRect();
       const logsLeft = logsLeftPixels(footer);
       const clampedLogsLeft = Math.max(260, Math.min(logsLeft, fRect.width - 12 - 260));
-      if (clampedLogsLeft !== logsLeft) setCssVar('--logs-left-px', clampedLogsLeft + 'px');
+      if (clampedLogsLeft!==logsLeft) setCssVar('--logs-left-px', clampedLogsLeft+'px');
     });
   }
 
-  // Generic drag helper using Pointer Events
-  function makeDrag(handle, { onStart, onMove }){
-    handle.addEventListener('pointerdown', (e)=>{
+  function makeDrag(handle, {onStart, onMove}){
+    handle.addEventListener('pointerdown', e=>{
       e.preventDefault();
       handle.setPointerCapture?.(e.pointerId);
-      const startState = onStart ? onStart() : {};
+      const start = onStart ? onStart() : {};
       const sx = e.clientX, sy = e.clientY;
-
-      function move(ev){
-        onMove?.(ev.clientX - sx, ev.clientY - sy, startState);
-      }
+      function move(ev){ onMove?.(ev.clientX - sx, ev.clientY - sy, start); }
       function up(){
         document.removeEventListener('pointermove', move);
         document.removeEventListener('pointerup', up);
-        document.body.style.userSelect = '';
-        document.body.style.cursor = '';
+        document.body.style.userSelect='';
+        document.body.style.cursor='';
       }
       document.addEventListener('pointermove', move);
-      document.addEventListener('pointerup', up, { once:true });
-      document.body.style.userSelect = 'none';
-      // Match cursor to handle for better UX
+      document.addEventListener('pointerup', up, {once:true});
+      document.body.style.userSelect='none';
       document.body.style.cursor = getComputedStyle(handle).cursor || 'default';
     });
   }
-
-  // CSS var helpers
-  function setCssVar(name, value){
-    document.documentElement.style.setProperty(name, value);
-  }
+  function setCssVar(name, value){ document.documentElement.style.setProperty(name, value); }
   function pxVar(name, fallback){
     const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     if (!v) return fallback;
-    if (v.endsWith('%')){
-      // Convert % to px relative to container where appropriate; default to fallback
-      return fallback;
-    }
     if (v.endsWith('px')) return parseFloat(v);
-    const num = parseFloat(v);
-    return Number.isFinite(num) ? num : fallback;
+    const n = parseFloat(v);
+    return Number.isFinite(n) ? n : fallback;
   }
   function logsLeftPixels(footerEl){
-    // Prefer current CSS var if in px; otherwise measure first log width
     const raw = getComputedStyle(document.documentElement).getPropertyValue('--logs-left-px').trim();
     if (raw.endsWith('px')) return parseFloat(raw);
     const firstLog = footerEl.querySelector('.log');
-    return firstLog ? firstLog.getBoundingClientRect().width : (footerEl.getBoundingClientRect().width / 2);
+    return firstLog ? firstLog.getBoundingClientRect().width : (footerEl.getBoundingClientRect().width/2);
   }
-
-
-
-  // Initialize on load
-  init();
-
-  // After your UI has been rendered and event hooks are set:
-  installResizers();
 
 })();
 </script>

@@ -1,0 +1,919 @@
+{
+  "values": [
+    {
+      "id": "physical.height.cm",
+      "value": 168
+    },
+    {
+      "id": "physical.mass.kg",
+      "value": 62
+    },
+    {
+      "id": "physical.age.apparent",
+      "value": 20
+    },
+    {
+      "id": "physical.age.biological",
+      "value": 20
+    },
+    {
+      "id": "physical.proportions.waist.cm",
+      "value": 61
+    },
+    {
+      "id": "physical.proportions.hip.cm",
+      "value": 98
+    },
+    {
+      "id": "physical.proportions.chest.cm",
+      "value": 102
+    },
+    {
+      "id": "physical.proportions.shoulders.cm",
+      "value": 38
+    },
+    {
+      "id": "physical.proportions.thighs.cm",
+      "value": 58
+    },
+    {
+      "id": "physical.proportions.calves.cm",
+      "value": 36
+    },
+    {
+      "id": "physical.proportions.biceps.cm",
+      "value": 26
+    },
+    {
+      "id": "physical.proportions.neck.cm",
+      "value": 31
+    },
+    {
+      "id": "physical.gender.identity",
+      "value": "Female"
+    },
+    {
+      "id": "physical.gender.presentation",
+      "value": "Feminine"
+    },
+    {
+      "id": "physical.gender.chromosomes",
+      "value": "XX"
+    },
+    {
+      "id": "physical.gender.hormones.testosterone",
+      "value": 10
+    },
+    {
+      "id": "physical.gender.hormones.estrogen",
+      "value": 120
+    },
+    {
+      "id": "physical.breasts.size.cup",
+      "value": "DD"
+    },
+    {
+      "id": "physical.breasts.size.band",
+      "value": 75
+    },
+    {
+      "id": "physical.breasts.shape",
+      "value": "Round"
+    },
+    {
+      "id": "physical.breasts.firmness",
+      "value": 85
+    },
+    {
+      "id": "physical.breasts.perkiness",
+      "value": 90
+    },
+    {
+      "id": "physical.breasts.natural",
+      "value": "Surgical Implants"
+    },
+    {
+      "id": "physical.breasts.implant.type",
+      "value": "Silicone"
+    },
+    {
+      "id": "physical.breasts.implant.size.cc",
+      "value": 450
+    },
+    {
+      "id": "physical.breasts.sensitivity",
+      "value": 85
+    },
+    {
+      "id": "physical.breasts.nipples.size",
+      "value": "Large"
+    },
+    {
+      "id": "physical.breasts.areola.color.hex",
+      "value": "#f5b5a8"
+    },
+    {
+      "id": "physical.breasts.areola.color.name",
+      "value": "Pink"
+    },
+    {
+      "id": "physical.breasts.areola.diameter.cm",
+      "value": 4.2
+    },
+    {
+      "id": "physical.breasts.lactation.capable",
+      "value": 75
+    },
+    {
+      "id": "physical.genitals.vagina.depth",
+      "value": "Average"
+    },
+    {
+      "id": "physical.genitals.vagina.tightness",
+      "value": 60
+    },
+    {
+      "id": "physical.genitals.vagina.sensitivity",
+      "value": 85
+    },
+    {
+      "id": "physical.genitals.vagina.lubrication",
+      "value": 95
+    },
+    {
+      "id": "physical.genitals.labia.size",
+      "value": "Small"
+    },
+    {
+      "id": "physical.genitals.labia.color.hex",
+      "value": "#f5b5a8"
+    },
+    {
+      "id": "physical.genitals.labia.color.name",
+      "value": "Pink"
+    },
+    {
+      "id": "physical.genitals.clitoris.size",
+      "value": "Average"
+    },
+    {
+      "id": "physical.genitals.clitoris.sensitivity",
+      "value": 95
+    },
+    {
+      "id": "physical.genitals.hymen.status",
+      "value": "Absent"
+    },
+    {
+      "id": "physical.genitals.fertility.ovulation",
+      "value": 90
+    },
+    {
+      "id": "physical.genitals.fertility.conception",
+      "value": 95
+    },
+    {
+      "id": "physical.genitals.menstruation.active",
+      "value": "Active"
+    },
+    {
+      "id": "physical.genitals.menstruation.cycle.days",
+      "value": 28
+    },
+    {
+      "id": "physical.sensitivity.neck",
+      "value": 80
+    },
+    {
+      "id": "physical.sensitivity.ears",
+      "value": 85
+    },
+    {
+      "id": "physical.sensitivity.lips",
+      "value": 90
+    },
+    {
+      "id": "physical.sensitivity.inner.thighs",
+      "value": 85
+    },
+    {
+      "id": "physical.sensitivity.back",
+      "value": 65
+    },
+    {
+      "id": "physical.sensitivity.feet",
+      "value": 55
+    },
+    {
+      "id": "physical.sensitivity.anus",
+      "value": 60
+    },
+    {
+      "id": "appearance.hair.length.cm",
+      "value": 55
+    },
+    {
+      "id": "appearance.hair.color.hex",
+      "value": "#f5e6d3"
+    },
+    {
+      "id": "appearance.hair.color.name",
+      "value": "Platinum Blonde"
+    },
+    {
+      "id": "appearance.hair.style",
+      "value": "Wavy"
+    },
+    {
+      "id": "appearance.hair.thickness",
+      "value": 80
+    },
+    {
+      "id": "appearance.hair.growth.speed",
+      "value": 100
+    },
+    {
+      "id": "appearance.body.hair.chest",
+      "value": 0
+    },
+    {
+      "id": "appearance.body.hair.arms",
+      "value": 5
+    },
+    {
+      "id": "appearance.body.hair.legs",
+      "value": 5
+    },
+    {
+      "id": "appearance.body.hair.pubic",
+      "value": 15
+    },
+    {
+      "id": "appearance.body.hair.facial",
+      "value": 0
+    },
+    {
+      "id": "appearance.eyes.color.hex",
+      "value": "#87ceeb"
+    },
+    {
+      "id": "appearance.eyes.color.name",
+      "value": "Blue"
+    },
+    {
+      "id": "appearance.eyes.shape",
+      "value": "Round"
+    },
+    {
+      "id": "appearance.eyelashes.length",
+      "value": 95
+    },
+    {
+      "id": "appearance.nose.shape",
+      "value": "Button"
+    },
+    {
+      "id": "appearance.lips.size",
+      "value": "Very Full"
+    },
+    {
+      "id": "appearance.lips.color.hex",
+      "value": "#ff69b4"
+    },
+    {
+      "id": "appearance.lips.color.name",
+      "value": "Glossy Pink"
+    },
+    {
+      "id": "appearance.face.shape",
+      "value": "Heart"
+    },
+    {
+      "id": "appearance.cheekbones",
+      "value": "Prominent"
+    },
+    {
+      "id": "appearance.jawline",
+      "value": "Soft"
+    },
+    {
+      "id": "appearance.skin.tone",
+      "value": "Light"
+    },
+    {
+      "id": "appearance.skin.smoothness",
+      "value": 92
+    },
+    {
+      "id": "appearance.skin.blemishes",
+      "value": 5
+    },
+    {
+      "id": "appearance.features",
+      "value": ["beauty mark"]
+    },
+    {
+      "id": "appearance.voice.pitch.hz",
+      "value": 245
+    },
+    {
+      "id": "appearance.voice.depth",
+      "value": 20
+    },
+    {
+      "id": "appearance.symmetry",
+      "value": 85
+    },
+    {
+      "id": "appearance.attractiveness",
+      "value": 88
+    },
+    {
+      "id": "fitness.strength",
+      "value": 25
+    },
+    {
+      "id": "fitness.endurance",
+      "value": 35
+    },
+    {
+      "id": "fitness.agility",
+      "value": 45
+    },
+    {
+      "id": "fitness.flexibility",
+      "value": 70
+    },
+    {
+      "id": "fitness.metabolism",
+      "value": 95
+    },
+    {
+      "id": "fitness.bodyfat",
+      "value": 24
+    },
+    {
+      "id": "fitness.muscle.mass",
+      "value": 28
+    },
+    {
+      "id": "health.overall",
+      "value": 78
+    },
+    {
+      "id": "health.immune.system",
+      "value": 70
+    },
+    {
+      "id": "health.healing.rate",
+      "value": 100
+    },
+    {
+      "id": "mental.cognition.intelligence",
+      "value": 85
+    },
+    {
+      "id": "mental.cognition.memory.capacity",
+      "value": 55
+    },
+    {
+      "id": "mental.cognition.memory.recall",
+      "value": 50
+    },
+    {
+      "id": "mental.cognition.learning.speed",
+      "value": 55
+    },
+    {
+      "id": "mental.cognition.focus",
+      "value": 40
+    },
+    {
+      "id": "mental.cognition.creativity",
+      "value": 50
+    },
+    {
+      "id": "mental.cognition.logical.thinking",
+      "value": 45
+    },
+    {
+      "id": "mental.personality.confidence",
+      "value": 78
+    },
+    {
+      "id": "mental.personality.kindness",
+      "value": 70
+    },
+    {
+      "id": "mental.personality.aggression",
+      "value": 15
+    },
+    {
+      "id": "mental.personality.curiosity",
+      "value": 50
+    },
+    {
+      "id": "mental.personality.extraversion",
+      "value": 85
+    },
+    {
+      "id": "mental.personality.empathy",
+      "value": 60
+    },
+    {
+      "id": "mental.personality.assertiveness",
+      "value": 40
+    },
+    {
+      "id": "mental.personality.openness",
+      "value": 75
+    },
+    {
+      "id": "mental.personality.conscientiousness",
+      "value": 45
+    },
+    {
+      "id": "mental.personality.neuroticism",
+      "value": 50
+    },
+    {
+      "id": "mental.emotions.happiness",
+      "value": 80
+    },
+    {
+      "id": "mental.emotions.fear",
+      "value": 35
+    },
+    {
+      "id": "mental.emotions.desire",
+      "value": 85
+    },
+    {
+      "id": "mental.emotions.calmness",
+      "value": 55
+    },
+    {
+      "id": "mental.emotions.anger",
+      "value": 20
+    },
+    {
+      "id": "mental.emotions.anxiety",
+      "value": 45
+    },
+    {
+      "id": "mental.emotions.stress.tolerance",
+      "value": 50
+    },
+    {
+      "id": "mental.influence.willpower",
+      "value": 40
+    },
+    {
+      "id": "mental.influence.susceptibility",
+      "value": 70
+    },
+    {
+      "id": "mental.influence.suggestibility",
+      "value": 75
+    },
+    {
+      "id": "mental.influence.obedience",
+      "value": 65
+    },
+    {
+      "id": "mental.influence.independence",
+      "value": 45
+    },
+    {
+      "id": "skills.languages",
+      "value": [
+        {
+          "language": "English",
+          "fluency": 100
+        }
+      ]
+    },
+    {
+      "id": "skills.artistic.ability",
+      "value": 45
+    },
+    {
+      "id": "skills.combat.training",
+      "value": 5
+    },
+    {
+      "id": "skills.technical.programming",
+      "value": 10
+    },
+    {
+      "id": "skills.musical.ability",
+      "value": 35
+    },
+    {
+      "id": "skills.athletic.ability",
+      "value": 30
+    },
+    {
+      "id": "skills.cooking",
+      "value": 25
+    },
+    {
+      "id": "habits.likes",
+      "value": [
+        {
+          "like": "Shopping",
+          "intensity": 95
+        },
+        {
+          "like": "Makeup and beauty",
+          "intensity": 90
+        },
+        {
+          "like": "Parties and clubs",
+          "intensity": 85
+        },
+        {
+          "like": "Social media",
+          "intensity": 90
+        },
+        {
+          "like": "Designer fashion",
+          "intensity": 88
+        }
+      ]
+    },
+    {
+      "id": "habits.dislikes",
+      "value": [
+        {
+          "dislike": "Being ignored",
+          "intensity": 80
+        },
+        {
+          "dislike": "Complicated things",
+          "intensity": 70
+        },
+        {
+          "dislike": "Being alone",
+          "intensity": 65
+        }
+      ]
+    },
+    {
+      "id": "habits.hobbies",
+      "value": [
+        {
+          "hobby": "Selfies and photography",
+          "proficiency": 80
+        },
+        {
+          "hobby": "Dancing",
+          "proficiency": 65
+        },
+        {
+          "hobby": "Fashion styling",
+          "proficiency": 75
+        }
+      ]
+    },
+    {
+      "id": "habits.sleep.schedule",
+      "value": "02:00–10:00"
+    },
+    {
+      "id": "habits.sleep.quality",
+      "value": 55
+    },
+    {
+      "id": "habits.sleep.hours",
+      "value": 8
+    },
+    {
+      "id": "sexuality.orientation",
+      "value": "Bisexual"
+    },
+    {
+      "id": "sexuality.romantic.orientation",
+      "value": "Biromantic"
+    },
+    {
+      "id": "sexuality.libido",
+      "value": 95
+    },
+    {
+      "id": "sexuality.arousal.ease",
+      "value": 90
+    },
+    {
+      "id": "sexuality.stamina",
+      "value": 75
+    },
+    {
+      "id": "sexuality.orgasm.ease",
+      "value": 85
+    },
+    {
+      "id": "sexuality.orgasm.intensity",
+      "value": 90
+    },
+    {
+      "id": "sexuality.orgasm.multiple",
+      "value": "Yes"
+    },
+    {
+      "id": "sexuality.attraction.women",
+      "value": 40
+    },
+    {
+      "id": "sexuality.attraction.men",
+      "value": 95
+    },
+    {
+      "id": "sexuality.attraction.nonbinary",
+      "value": 30
+    },
+    {
+      "id": "sexuality.preferences.dominance",
+      "value": -60
+    },
+    {
+      "id": "sexuality.preferences.exhibitionism",
+      "value": 75
+    },
+    {
+      "id": "sexuality.preferences.voyeurism",
+      "value": 45
+    },
+    {
+      "id": "sexuality.preferences.roughness",
+      "value": 55
+    },
+    {
+      "id": "sexuality.preferences.tenderness",
+      "value": 70
+    },
+    {
+      "id": "sexuality.openness.experimentation",
+      "value": 85
+    },
+    {
+      "id": "sexuality.preferences.oral.giving",
+      "value": 85
+    },
+    {
+      "id": "sexuality.preferences.oral.receiving",
+      "value": 95
+    },
+    {
+      "id": "sexuality.preferences.anal.giving",
+      "value": 0
+    },
+    {
+      "id": "sexuality.preferences.anal.receiving",
+      "value": 65
+    },
+    {
+      "id": "sexuality.experience.level",
+      "value": "Very Experienced"
+    },
+    {
+      "id": "sexuality.experience.partners.count",
+      "value": 12
+    },
+    {
+      "id": "sexuality.experience.skill",
+      "value": 75
+    },
+    {
+      "id": "sexuality.inhibitions",
+      "value": 25
+    },
+    {
+      "id": "sexuality.shame",
+      "value": 15
+    },
+    {
+      "id": "sexuality.fetishes.list",
+      "value": [
+        {
+          "fetish": "Being desired/admired",
+          "intensity": 90
+        },
+        {
+          "fetish": "Lingerie",
+          "intensity": 85
+        },
+        {
+          "fetish": "Public attention",
+          "intensity": 75
+        }
+      ]
+    },
+    {
+      "id": "social.relationship.status",
+      "value": "Complicated"
+    },
+    {
+      "id": "social.influence.charisma",
+      "value": 80
+    },
+    {
+      "id": "social.influence.popularity",
+      "value": 85
+    },
+    {
+      "id": "social.influence.persuasiveness",
+      "value": 75
+    },
+    {
+      "id": "social.reputation.score",
+      "value": 35
+    },
+    {
+      "id": "social.reputation.tags",
+      "value": ["hot", "party girl", "social butterfly", "flirty"]
+    },
+    {
+      "id": "history.dob",
+      "value": "2004-08-12"
+    },
+    {
+      "id": "history.birthplace",
+      "value": "Los Angeles, California"
+    },
+    {
+      "id": "history.schools",
+      "value": [
+        {
+          "school_name": "Beverly Hills High School",
+          "years": "2018–2022"
+        },
+        {
+          "school_name": "Community College",
+          "years": "2022–present"
+        }
+      ]
+    },
+    {
+      "id": "history.major.events",
+      "value": [
+        {
+          "year": "2023",
+          "event": "Breast augmentation surgery"
+        },
+        {
+          "year": "2022",
+          "event": "Started modeling on social media"
+        }
+      ]
+    },
+    {
+      "id": "species.base",
+      "value": "Human"
+    },
+    {
+      "id": "species.humanity",
+      "value": 100
+    },
+    {
+      "id": "species.hybrid.enabled",
+      "value": "None"
+    },
+    {
+      "id": "species.form.type",
+      "value": "Fully Human"
+    },
+    {
+      "id": "species.form.anthro.level",
+      "value": 0
+    },
+    {
+      "id": "species.stance.type",
+      "value": "Plantigrade (Human-like, flat feet)"
+    },
+    {
+      "id": "species.limbs.arms",
+      "value": 2
+    },
+    {
+      "id": "species.limbs.legs",
+      "value": 2
+    },
+    {
+      "id": "species.limbs.hands.type",
+      "value": "Human Hands"
+    },
+    {
+      "id": "species.limbs.fingers",
+      "value": 5
+    },
+    {
+      "id": "species.head.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.head.muzzle",
+      "value": "None (Flat face)"
+    },
+    {
+      "id": "species.head.teeth.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.head.tongue.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.head.ears.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.head.horns.count",
+      "value": 0
+    },
+    {
+      "id": "species.head.horns.type",
+      "value": "None"
+    },
+    {
+      "id": "species.skin.type",
+      "value": "Skin (Human-like)"
+    },
+    {
+      "id": "species.skin.color.primary.hex",
+      "value": "#fde8d7"
+    },
+    {
+      "id": "species.skin.color.primary.name",
+      "value": "Fair with tan"
+    },
+    {
+      "id": "species.skin.pattern",
+      "value": "Solid/Uniform"
+    },
+    {
+      "id": "species.skin.luminescence",
+      "value": 0
+    },
+    {
+      "id": "species.skin.reflectivity",
+      "value": 25
+    },
+    {
+      "id": "species.appendages.tail.count",
+      "value": 0
+    },
+    {
+      "id": "species.appendages.tail.type",
+      "value": "None"
+    },
+    {
+      "id": "species.appendages.wings.count",
+      "value": 0
+    },
+    {
+      "id": "species.appendages.wings.type",
+      "value": "None"
+    },
+    {
+      "id": "species.special.breasts.count",
+      "value": 2
+    },
+    {
+      "id": "species.special.breasts.arrangement",
+      "value": "Standard (2 on chest)"
+    },
+    {
+      "id": "species.special.genitals.count",
+      "value": 1
+    },
+    {
+      "id": "species.special.genitals.type",
+      "value": "Human-like"
+    },
+    {
+      "id": "species.special.eyes.count",
+      "value": 2
+    },
+    {
+      "id": "species.special.eyes.type",
+      "value": "Human"
+    },
+    {
+      "id": "species.special.size.category",
+      "value": "Medium (Human-sized)"
+    },
+    {
+      "id": "species.special.shapeshifting",
+      "value": 0
+    },
+    {
+      "id": "species.special.regeneration",
+      "value": 100
+    },
+    {
+      "id": "species.voice.capability",
+      "value": "Full Human Speech"
+    }
+  ]
+}
