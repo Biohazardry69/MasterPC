@@ -1,0 +1,3080 @@
+{
+  "version": "1.0",
+  "meta": {
+    "title": "Master PC",
+    "subtitle": "Reality Configuration Console",
+    "defaultSubject": null,
+    "awareness": {
+      "default": "Everyone",
+      "options": ["Everyone", "Subject+User", "User only", "Nobody"]
+    },
+    "autoApply": false,
+    "locked": false
+  },
+  "parameterGroups": [
+    {
+      "id": "physical",
+      "label": "Physical Attributes",
+      "expanded": true,
+      "items": [
+        {
+          "type": "input",
+          "id": "physical.height.cm",
+          "label": "Height",
+          "inputType": "number",
+          "unit": "cm",
+          "min": 0,
+          "step": 0.1,
+          "placeholder": "cm"
+        },
+        {
+          "type": "input",
+          "id": "physical.mass.kg",
+          "label": "Mass",
+          "inputType": "number",
+          "unit": "kg",
+          "min": 0,
+          "step": 0.1,
+          "placeholder": "kg"
+        },
+        {
+          "type": "range",
+          "id": "physical.age.apparent",
+          "label": "Apparent Age",
+          "min": 0,
+          "max": 120,
+          "unit": "years",
+          "showValue": true
+        },
+        {
+          "type": "range",
+          "id": "physical.age.biological",
+          "label": "Biological Age",
+          "min": 0,
+          "max": 120,
+          "unit": "years",
+          "showValue": true
+        },
+        {
+          "type": "group",
+          "id": "physical.proportions",
+          "label": "Body Proportions",
+          "expanded": false,
+          "items": [
+            {
+              "type": "input",
+              "id": "physical.proportions.waist.cm",
+              "label": "Waist",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "input",
+              "id": "physical.proportions.hip.cm",
+              "label": "Hips",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "input",
+              "id": "physical.proportions.chest.cm",
+              "label": "Chest",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "input",
+              "id": "physical.proportions.shoulders.cm",
+              "label": "Shoulders",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "input",
+              "id": "physical.proportions.thighs.cm",
+              "label": "Thighs",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "input",
+              "id": "physical.proportions.calves.cm",
+              "label": "Calves",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "input",
+              "id": "physical.proportions.biceps.cm",
+              "label": "Biceps",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "input",
+              "id": "physical.proportions.neck.cm",
+              "label": "Neck",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            }
+          ]
+        },
+        {
+          "type": "select",
+          "id": "physical.gender.identity",
+          "label": "Gender Identity",
+          "options": ["", "Female", "Male", "Nonbinary", "Intersex", "Trans (MTF)", "Trans (FTM)", "Genderfluid", "Agender", "Custom"],
+          "default": ""
+        },
+        {
+          "type": "select",
+          "id": "physical.gender.presentation",
+          "label": "Gender Presentation",
+          "options": ["", "Feminine", "Masculine", "Androgynous", "Fluid", "Custom"],
+          "default": ""
+        },
+        {
+          "type": "group",
+          "id": "physical.gender.options",
+          "label": "Gender Configuration",
+          "expanded": false,
+          "items": [
+            {
+              "type": "input",
+              "id": "physical.gender.chromosomes",
+              "label": "Chromosomal Pattern",
+              "inputType": "text",
+              "placeholder": "e.g., XX, XY, XXY..."
+            },
+            {
+              "type": "input",
+              "id": "physical.gender.secondaryTraits",
+              "label": "Secondary Sex Traits",
+              "inputType": "text",
+              "placeholder": "Describe..."
+            },
+            {
+              "type": "range",
+              "id": "physical.gender.hormones.testosterone",
+              "label": "Testosterone Level",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.gender.hormones.estrogen",
+              "label": "Estrogen Level",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "physical.breasts",
+          "label": "Breast Characteristics",
+          "expanded": false,
+          "items": [
+            {
+              "type": "input",
+              "id": "physical.breasts.size.cup",
+              "label": "Cup Size",
+              "inputType": "text",
+              "placeholder": "e.g., C, DD, etc."
+            },
+            {
+              "type": "input",
+              "id": "physical.breasts.size.band",
+              "label": "Band Size",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 1
+            },
+            {
+              "type": "select",
+              "id": "physical.breasts.shape",
+              "label": "Breast Shape",
+              "options": ["", "Round", "Teardrop", "Asymmetric", "East-West", "Bell", "Athletic"],
+              "default": ""
+            },
+            {
+              "type": "range",
+              "id": "physical.breasts.firmness",
+              "label": "Firmness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.breasts.perkiness",
+              "label": "Perkiness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "select",
+              "id": "physical.breasts.natural",
+              "label": "Natural/Enhanced",
+              "options": ["Natural", "Surgical Implants", "Fat Transfer", "Hormone Developed"],
+              "default": "Natural"
+            },
+            {
+              "type": "input",
+              "id": "physical.breasts.implant.type",
+              "label": "Implant Type (if applicable)",
+              "inputType": "text",
+              "placeholder": "e.g., Silicone, Saline"
+            },
+            {
+              "type": "input",
+              "id": "physical.breasts.implant.size.cc",
+              "label": "Implant Volume",
+              "inputType": "number",
+              "unit": "cc",
+              "min": 0
+            },
+            {
+              "type": "range",
+              "id": "physical.breasts.sensitivity",
+              "label": "Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "select",
+              "id": "physical.breasts.nipples.size",
+              "label": "Nipple Size",
+              "options": ["", "Very Small", "Small", "Average", "Large", "Very Large"],
+              "default": ""
+            },
+            {
+              "type": "composite",
+              "label": "Areola Color",
+              "items": [
+                {
+                  "type": "input",
+                  "id": "physical.breasts.areola.color.hex",
+                  "label": "Areola color",
+                  "inputType": "color"
+                },
+                {
+                  "type": "input",
+                  "id": "physical.breasts.areola.color.name",
+                  "label": "Color name",
+                  "inputType": "text",
+                  "placeholder": "e.g., Pink, Brown"
+                }
+              ]
+            },
+            {
+              "type": "range",
+              "id": "physical.breasts.areola.diameter.cm",
+              "label": "Areola Diameter",
+              "min": 0,
+              "max": 10,
+              "step": 0.1,
+              "unit": "cm",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.breasts.lactation.capable",
+              "label": "Lactation Capability",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "physical.genitals.male",
+          "label": "Male Genitalia",
+          "expanded": false,
+          "items": [
+            {
+              "type": "input",
+              "id": "physical.genitals.penis.length.flaccid.cm",
+              "label": "Penis Length (Flaccid)",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "type": "input",
+              "id": "physical.genitals.penis.length.erect.cm",
+              "label": "Penis Length (Erect)",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "type": "input",
+              "id": "physical.genitals.penis.girth.cm",
+              "label": "Penis Girth",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "type": "select",
+              "id": "physical.genitals.penis.circumcised",
+              "label": "Circumcision Status",
+              "options": ["Uncircumcised", "Circumcised", "Partially Circumcised"],
+              "default": "Uncircumcised"
+            },
+            {
+              "type": "select",
+              "id": "physical.genitals.penis.shape",
+              "label": "Penis Shape",
+              "options": ["", "Straight", "Curved Up", "Curved Down", "Curved Left", "Curved Right"],
+              "default": ""
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.penis.sensitivity",
+              "label": "Penis Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "input",
+              "id": "physical.genitals.testicles.size.cm",
+              "label": "Testicle Size",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.testicles.hang",
+              "label": "Testicle Position",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.fertility.sperm.count",
+              "label": "Sperm Count",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.fertility.virility",
+              "label": "Virility",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.refractory.period",
+              "label": "Refractory Period",
+              "min": 0,
+              "max": 200,
+              "unit": "minutes",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "physical.genitals.female",
+          "label": "Female Genitalia",
+          "expanded": false,
+          "items": [
+            {
+              "type": "select",
+              "id": "physical.genitals.vagina.depth",
+              "label": "Vaginal Depth",
+              "options": ["", "Shallow", "Average", "Deep"],
+              "default": ""
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.vagina.tightness",
+              "label": "Vaginal Tightness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.vagina.sensitivity",
+              "label": "Vaginal Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.vagina.lubrication",
+              "label": "Natural Lubrication",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "select",
+              "id": "physical.genitals.labia.size",
+              "label": "Labia Size",
+              "options": ["", "Very Small", "Small", "Average", "Large", "Very Large"],
+              "default": ""
+            },
+            {
+              "type": "composite",
+              "label": "Labia Color",
+              "items": [
+                {
+                  "type": "input",
+                  "id": "physical.genitals.labia.color.hex",
+                  "label": "Labia color",
+                  "inputType": "color"
+                },
+                {
+                  "type": "input",
+                  "id": "physical.genitals.labia.color.name",
+                  "label": "Color name",
+                  "inputType": "text",
+                  "placeholder": "e.g., Pink, Brown"
+                }
+              ]
+            },
+            {
+              "type": "select",
+              "id": "physical.genitals.clitoris.size",
+              "label": "Clitoris Size",
+              "options": ["", "Very Small", "Small", "Average", "Large", "Very Large"],
+              "default": ""
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.clitoris.sensitivity",
+              "label": "Clitoral Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "select",
+              "id": "physical.genitals.hymen.status",
+              "label": "Hymen Status",
+              "options": ["Intact", "Partial", "Absent", "N/A"],
+              "default": "N/A"
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.fertility.ovulation",
+              "label": "Ovulation Regularity",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.genitals.fertility.conception",
+              "label": "Conception Capability",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "select",
+              "id": "physical.genitals.menstruation.active",
+              "label": "Menstruation Status",
+              "options": ["Active", "Irregular", "Absent", "Menopausal", "N/A"],
+              "default": "N/A"
+            },
+            {
+              "type": "input",
+              "id": "physical.genitals.menstruation.cycle.days",
+              "label": "Cycle Length",
+              "inputType": "number",
+              "unit": "days",
+              "min": 0
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "physical.other.zones",
+          "label": "Other Erogenous Zones",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "physical.sensitivity.neck",
+              "label": "Neck Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.sensitivity.ears",
+              "label": "Ear Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.sensitivity.lips",
+              "label": "Lip Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.sensitivity.inner.thighs",
+              "label": "Inner Thigh Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.sensitivity.back",
+              "label": "Back Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.sensitivity.feet",
+              "label": "Feet Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "physical.sensitivity.anus",
+              "label": "Anal Sensitivity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "physical.bodymod",
+          "label": "Body Modifications",
+          "expanded": false,
+          "items": [
+            {
+              "type": "repeater",
+              "id": "physical.bodymod.tattoos",
+              "label": "Tattoos",
+              "columns": [
+                {
+                  "key": "location",
+                  "label": "Location",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "label": "Description",
+                  "type": "text"
+                },
+                {
+                  "key": "size",
+                  "label": "Size",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "repeater",
+              "id": "physical.bodymod.piercings",
+              "label": "Piercings",
+              "columns": [
+                {
+                  "key": "location",
+                  "label": "Location",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "label": "Type",
+                  "type": "text"
+                },
+                {
+                  "key": "jewelry",
+                  "label": "Jewelry",
+                  "type": "text"
+                }
+              ]
+            },
+            {
+              "type": "repeater",
+              "id": "physical.bodymod.scars",
+              "label": "Scars & Marks",
+              "columns": [
+                {
+                  "key": "location",
+                  "label": "Location",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "label": "Description",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "appearance",
+          "label": "Appearance",
+          "expanded": false,
+          "items": [
+            {
+              "type": "group",
+              "id": "appearance.hair",
+              "label": "Hair",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "input",
+                  "id": "appearance.hair.length.cm",
+                  "label": "Length",
+                  "inputType": "number",
+                  "unit": "cm",
+                  "min": 0,
+                  "step": 0.5
+                },
+                {
+                  "type": "composite",
+                  "label": "Color",
+                  "items": [
+                    {
+                      "type": "input",
+                      "id": "appearance.hair.color.hex",
+                      "label": "Hair color",
+                      "inputType": "color"
+                    },
+                    {
+                      "type": "input",
+                      "id": "appearance.hair.color.name",
+                      "label": "Hair color name",
+                      "inputType": "text",
+                      "placeholder": "e.g., Chestnut Brown"
+                    }
+                  ]
+                },
+                {
+                  "type": "select",
+                  "id": "appearance.hair.style",
+                  "label": "Style",
+                  "options": ["", "Straight", "Wavy", "Curly", "Coily", "Shaved", "Updo / Ponytail", "Braided", "Dreadlocks"],
+                  "default": ""
+                },
+                {
+                  "type": "range",
+                  "id": "appearance.hair.thickness",
+                  "label": "Hair Thickness",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                },
+                {
+                  "type": "range",
+                  "id": "appearance.hair.growth.speed",
+                  "label": "Growth Rate",
+                  "min": 0,
+                  "max": 300,
+                  "unit": "%",
+                  "showValue": true
+                }
+              ]
+            },
+            {
+              "type": "group",
+              "id": "appearance.body.hair",
+              "label": "Body Hair",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "range",
+                  "id": "appearance.body.hair.chest",
+                  "label": "Chest Hair",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                },
+                {
+                  "type": "range",
+                  "id": "appearance.body.hair.arms",
+                  "label": "Arm Hair",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                },
+                {
+                  "type": "range",
+                  "id": "appearance.body.hair.legs",
+                  "label": "Leg Hair",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                },
+                {
+                  "type": "range",
+                  "id": "appearance.body.hair.pubic",
+                  "label": "Pubic Hair",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                },
+                {
+                  "type": "range",
+                  "id": "appearance.body.hair.facial",
+                  "label": "Facial Hair",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                }
+              ]
+            },
+            {
+              "type": "group",
+              "id": "appearance.face",
+              "label": "Facial Features",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "composite",
+                  "label": "Eyes",
+                  "items": [
+                    {
+                      "type": "input",
+                      "id": "appearance.eyes.color.hex",
+                      "label": "Eye color",
+                      "inputType": "color"
+                    },
+                    {
+                      "type": "input",
+                      "id": "appearance.eyes.color.name",
+                      "label": "Eye color name",
+                      "inputType": "text",
+                      "placeholder": "e.g., Hazel"
+                    }
+                  ]
+                },
+                {
+                  "type": "select",
+                  "id": "appearance.eyes.shape",
+                  "label": "Eye Shape",
+                  "options": ["", "Almond", "Round", "Hooded", "Upturned", "Downturned", "Monolid"],
+                  "default": ""
+                },
+                {
+                  "type": "range",
+                  "id": "appearance.eyelashes.length",
+                  "label": "Eyelash Length",
+                  "min": 0,
+                  "max": 200,
+                  "unit": "%",
+                  "showValue": true
+                },
+                {
+                  "type": "select",
+                  "id": "appearance.nose.shape",
+                  "label": "Nose Shape",
+                  "options": ["", "Button", "Roman", "Aquiline", "Snub", "Broad", "Narrow"],
+                  "default": ""
+                },
+                {
+                  "type": "select",
+                  "id": "appearance.lips.size",
+                  "label": "Lip Fullness",
+                  "options": ["", "Thin", "Average", "Full", "Very Full"],
+                  "default": ""
+                },
+                {
+                  "type": "composite",
+                  "label": "Lip Color",
+                  "items": [
+                    {
+                      "type": "input",
+                      "id": "appearance.lips.color.hex",
+                      "label": "Lip color",
+                      "inputType": "color"
+                    },
+                    {
+                      "type": "input",
+                      "id": "appearance.lips.color.name",
+                      "label": "Color name",
+                      "inputType": "text",
+                      "placeholder": "e.g., Rose, Natural"
+                    }
+                  ]
+                },
+                {
+                  "type": "select",
+                  "id": "appearance.face.shape",
+                  "label": "Face Shape",
+                  "options": ["", "Oval", "Round", "Square", "Heart", "Diamond", "Oblong"],
+                  "default": ""
+                },
+                {
+                  "type": "select",
+                  "id": "appearance.cheekbones",
+                  "label": "Cheekbones",
+                  "options": ["", "Subtle", "Average", "Prominent", "Very Prominent"],
+                  "default": ""
+                },
+                {
+                  "type": "select",
+                  "id": "appearance.jawline",
+                  "label": "Jawline",
+                  "options": ["", "Soft", "Defined", "Strong", "Angular"],
+                  "default": ""
+                }
+              ]
+            },
+            {
+              "type": "select",
+              "id": "appearance.skin.tone",
+              "label": "Skin Tone",
+              "options": ["", "Very light", "Light", "Medium", "Olive", "Tan", "Brown", "Dark", "Very Dark"],
+              "default": ""
+            },
+            {
+              "type": "range",
+              "id": "appearance.skin.smoothness",
+              "label": "Skin Smoothness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "appearance.skin.blemishes",
+              "label": "Blemishes/Acne",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "tags",
+              "id": "appearance.features",
+              "label": "Distinctive Features",
+              "placeholder": "freckles, dimples, beauty mark..."
+            },
+            {
+              "type": "range",
+              "id": "appearance.voice.pitch.hz",
+              "label": "Voice Pitch",
+              "min": 80,
+              "max": 320,
+              "step": 1,
+              "unit": "Hz",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "appearance.voice.depth",
+              "label": "Voice Depth",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "appearance.symmetry",
+              "label": "Facial Symmetry",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "appearance.attractiveness",
+              "label": "Physical Attractiveness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "fitness",
+          "label": "Fitness & Health",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "fitness.strength",
+              "label": "Strength",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "fitness.endurance",
+              "label": "Endurance",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "fitness.agility",
+              "label": "Agility",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "fitness.flexibility",
+              "label": "Flexibility",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "fitness.metabolism",
+              "label": "Metabolism Rate",
+              "min": 0,
+              "max": 300,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "fitness.bodyfat",
+              "label": "Body Fat Percentage",
+              "min": 0,
+              "max": 60,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "fitness.muscle.mass",
+              "label": "Muscle Mass",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "health.overall",
+              "label": "Overall Health",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "health.immune.system",
+              "label": "Immune System",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "health.healing.rate",
+              "label": "Healing Rate",
+              "min": 0,
+              "max": 300,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "repeater",
+              "id": "health.allergies",
+              "label": "Allergies",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Allergen",
+                  "type": "text"
+                },
+                {
+                  "key": "severity",
+                  "label": "Severity (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            },
+            {
+              "type": "repeater",
+              "id": "health.conditions",
+              "label": "Medical Conditions",
+              "columns": [
+                {
+                  "key": "condition",
+                  "label": "Condition",
+                  "type": "text"
+                },
+                {
+                  "key": "severity",
+                  "label": "Severity (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mental",
+      "label": "Mental & Cognitive Traits",
+      "expanded": false,
+      "items": [
+        {
+          "type": "group",
+          "id": "mental.cognition",
+          "label": "Cognition",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "mental.cognition.intelligence",
+              "label": "Intelligence (IQ)",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.cognition.memory.capacity",
+              "label": "Memory Capacity",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.cognition.memory.recall",
+              "label": "Memory Recall Speed",
+              "min": 0,
+              "max": 200,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.cognition.learning.speed",
+              "label": "Learning Speed",
+              "min": 0,
+              "max": 300,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.cognition.focus",
+              "label": "Focus/Concentration",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.cognition.creativity",
+              "label": "Creativity",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.cognition.logical.thinking",
+              "label": "Logical Thinking",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "mental.personality",
+          "label": "Personality & Temperament",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "mental.personality.confidence",
+              "label": "Confidence",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.kindness",
+              "label": "Kindness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.aggression",
+              "label": "Aggression",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.curiosity",
+              "label": "Curiosity",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.extraversion",
+              "label": "Extraversion",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.empathy",
+              "label": "Empathy",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.assertiveness",
+              "label": "Assertiveness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.openness",
+              "label": "Openness to Experience",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.conscientiousness",
+              "label": "Conscientiousness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.personality.neuroticism",
+              "label": "Neuroticism",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "mental.emotions",
+          "label": "Emotional States",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "mental.emotions.happiness",
+              "label": "Happiness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.emotions.fear",
+              "label": "Fear",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.emotions.desire",
+              "label": "Desire",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.emotions.calmness",
+              "label": "Calmness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.emotions.anger",
+              "label": "Anger",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.emotions.anxiety",
+              "label": "Anxiety",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.emotions.stress.tolerance",
+              "label": "Stress Tolerance",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "mental.influence",
+          "label": "Willpower & Influence",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "mental.influence.willpower",
+              "label": "Willpower",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.influence.susceptibility",
+              "label": "Susceptibility to Influence",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.influence.suggestibility",
+              "label": "Suggestibility",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.influence.obedience",
+              "label": "Obedience",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "mental.influence.independence",
+              "label": "Independence",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "skills",
+          "label": "Skills & Talents",
+          "expanded": false,
+          "items": [
+            {
+              "type": "repeater",
+              "id": "skills.languages",
+              "label": "Languages",
+              "columns": [
+                {
+                  "key": "language",
+                  "label": "Language",
+                  "type": "text"
+                },
+                {
+                  "key": "fluency",
+                  "label": "Fluency (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            },
+            {
+              "type": "range",
+              "id": "skills.artistic.ability",
+              "label": "Artistic Ability",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "skills.combat.training",
+              "label": "Combat Training",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "skills.technical.programming",
+              "label": "Programming Skill",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "skills.musical.ability",
+              "label": "Musical Ability",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "skills.athletic.ability",
+              "label": "Athletic Ability",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "skills.cooking",
+              "label": "Cooking Skill",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "habits",
+          "label": "Habits & Preferences",
+          "expanded": false,
+          "items": [
+            {
+              "type": "repeater",
+              "id": "habits.likes",
+              "label": "Likes",
+              "compact": true,
+              "columns": [
+                {
+                  "key": "like",
+                  "label": "Like",
+                  "type": "text"
+                },
+                {
+                  "key": "intensity",
+                  "label": "Intensity (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            },
+            {
+              "type": "repeater",
+              "id": "habits.dislikes",
+              "label": "Dislikes",
+              "compact": true,
+              "columns": [
+                {
+                  "key": "dislike",
+                  "label": "Dislike",
+                  "type": "text"
+                },
+                {
+                  "key": "intensity",
+                  "label": "Intensity (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            },
+            {
+              "type": "repeater",
+              "id": "habits.hobbies",
+              "label": "Hobbies",
+              "columns": [
+                {
+                  "key": "hobby",
+                  "label": "Hobby",
+                  "type": "text"
+                },
+                {
+                  "key": "proficiency",
+                  "label": "Proficiency (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            },
+            {
+              "type": "input",
+              "id": "habits.sleep.schedule",
+              "label": "Sleep Schedule",
+              "inputType": "text",
+              "placeholder": "e.g., 23:00–07:00"
+            },
+            {
+              "type": "range",
+              "id": "habits.sleep.quality",
+              "label": "Sleep Quality",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "input",
+              "id": "habits.sleep.hours",
+              "label": "Sleep Hours per Night",
+              "inputType": "number",
+              "unit": "hours",
+              "min": 0,
+              "max": 24,
+              "step": 0.5
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sexuality",
+      "label": "Sexuality & Orientation",
+      "expanded": false,
+      "items": [
+        {
+          "type": "select",
+          "id": "sexuality.orientation",
+          "label": "Sexual Orientation",
+          "options": ["", "Heterosexual", "Homosexual", "Bisexual", "Pansexual", "Asexual", "Demisexual", "Fluid", "Questioning"],
+          "default": ""
+        },
+        {
+          "type": "select",
+          "id": "sexuality.romantic.orientation",
+          "label": "Romantic Orientation",
+          "options": ["", "Heteroromantic", "Homoromantic", "Biromantic", "Panromantic", "Aromantic", "Demiromantic", "Fluid"],
+          "default": ""
+        },
+        {
+          "type": "range",
+          "id": "sexuality.libido",
+          "label": "Libido / Sex Drive",
+          "min": 0,
+          "max": 200,
+          "unit": "%",
+          "showValue": true
+        },
+        {
+          "type": "range",
+          "id": "sexuality.arousal.ease",
+          "label": "Arousal Ease",
+          "min": 0,
+          "max": 200,
+          "unit": "%",
+          "showValue": true
+        },
+        {
+          "type": "range",
+          "id": "sexuality.stamina",
+          "label": "Sexual Stamina",
+          "min": 0,
+          "max": 200,
+          "unit": "%",
+          "showValue": true
+        },
+        {
+          "type": "range",
+          "id": "sexuality.orgasm.ease",
+          "label": "Orgasm Ease",
+          "min": 0,
+          "max": 200,
+          "unit": "%",
+          "showValue": true
+        },
+        {
+          "type": "range",
+          "id": "sexuality.orgasm.intensity",
+          "label": "Orgasm Intensity",
+          "min": 0,
+          "max": 200,
+          "unit": "%",
+          "showValue": true
+        },
+        {
+          "type": "select",
+          "id": "sexuality.orgasm.multiple",
+          "label": "Multiple Orgasm Capable",
+          "options": ["No", "Yes", "Unlimited"],
+          "default": "No"
+        },
+        {
+          "type": "group",
+          "id": "sexuality.attraction",
+          "label": "Attraction Levels",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "sexuality.attraction.women",
+              "label": "Attraction to Women",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.attraction.men",
+              "label": "Attraction to Men",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.attraction.nonbinary",
+              "label": "Attraction to Nonbinary People",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "sexuality.preferences",
+          "label": "Sexual Preferences",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "sexuality.preferences.dominance",
+              "label": "Dominance ← → Submission",
+              "min": -100,
+              "max": 100,
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.preferences.exhibitionism",
+              "label": "Exhibitionism",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.preferences.voyeurism",
+              "label": "Voyeurism",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.preferences.roughness",
+              "label": "Preference for Rough Sex",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.preferences.tenderness",
+              "label": "Preference for Tender/Gentle",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.openness.experimentation",
+              "label": "Openness to Experimentation",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.preferences.oral.giving",
+              "label": "Enjoyment Giving Oral",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.preferences.oral.receiving",
+              "label": "Enjoyment Receiving Oral",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.preferences.anal.giving",
+              "label": "Enjoyment Anal (Giving)",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.preferences.anal.receiving",
+              "label": "Enjoyment Anal (Receiving)",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "sexuality.fetishes",
+          "label": "Fetishes & Kinks",
+          "expanded": false,
+          "items": [
+            {
+              "type": "repeater",
+              "id": "sexuality.fetishes.list",
+              "label": "Fetishes",
+              "columns": [
+                {
+                  "key": "fetish",
+                  "label": "Fetish/Kink",
+                  "type": "text"
+                },
+                {
+                  "key": "intensity",
+                  "label": "Intensity (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            },
+            {
+              "type": "repeater",
+              "id": "sexuality.fetishes.triggers",
+              "label": "Arousal Triggers",
+              "columns": [
+                {
+                  "key": "trigger",
+                  "label": "Trigger",
+                  "type": "text"
+                },
+                {
+                  "key": "strength",
+                  "label": "Strength (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            },
+            {
+              "type": "repeater",
+              "id": "sexuality.fetishes.turnoffs",
+              "label": "Turn-offs",
+              "columns": [
+                {
+                  "key": "turnoff",
+                  "label": "Turn-off",
+                  "type": "text"
+                },
+                {
+                  "key": "severity",
+                  "label": "Severity (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "sexuality.experience",
+          "label": "Sexual Experience",
+          "expanded": false,
+          "items": [
+            {
+              "type": "select",
+              "id": "sexuality.experience.level",
+              "label": "Experience Level",
+              "options": ["Virgin", "Inexperienced", "Some Experience", "Experienced", "Very Experienced", "Expert"],
+              "default": "Some Experience"
+            },
+            {
+              "type": "input",
+              "id": "sexuality.experience.partners.count",
+              "label": "Number of Partners",
+              "inputType": "number",
+              "min": 0
+            },
+            {
+              "type": "range",
+              "id": "sexuality.experience.skill",
+              "label": "Sexual Skill",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.inhibitions",
+              "label": "Sexual Inhibitions",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "sexuality.shame",
+              "label": "Sexual Shame",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "social",
+      "label": "Social & Relational Parameters",
+      "expanded": false,
+      "items": [
+        {
+          "type": "group",
+          "id": "social.loyalty",
+          "label": "Loyalty, Trust, Affection",
+          "expanded": false,
+          "items": [
+            {
+              "type": "repeater",
+              "id": "social.relations",
+              "label": "Specific People",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "key": "loyalty",
+                  "label": "Loyalty (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                },
+                {
+                  "key": "trust",
+                  "label": "Trust (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                },
+                {
+                  "key": "affection",
+                  "label": "Affection (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "social.relationship",
+          "label": "Relationship Status",
+          "expanded": false,
+          "items": [
+            {
+              "type": "select",
+              "id": "social.relationship.status",
+              "label": "Status",
+              "options": ["Single", "In a Relationship", "Married", "Engaged", "Complicated", "Polyamorous", "Open Relationship"],
+              "default": "Single"
+            },
+            {
+              "type": "repeater",
+              "id": "social.relationships.active",
+              "label": "Active Relationships",
+              "columns": [
+                {
+                  "key": "name",
+                  "label": "Name",
+                  "type": "text"
+                },
+                {
+                  "key": "type",
+                  "label": "Type",
+                  "type": "text"
+                },
+                {
+                  "key": "since",
+                  "label": "Since (YYYY)",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "social.influence",
+          "label": "Social Influence",
+          "expanded": false,
+          "items": [
+            {
+              "type": "range",
+              "id": "social.influence.charisma",
+              "label": "Charisma",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "social.influence.popularity",
+              "label": "Popularity",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "social.influence.persuasiveness",
+              "label": "Persuasiveness",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "social.reputation.score",
+              "label": "Reputation Score",
+              "min": -100,
+              "max": 100,
+              "showValue": true
+            },
+            {
+              "type": "tags",
+              "id": "social.reputation.tags",
+              "label": "Reputation Tags",
+              "placeholder": "reliable, genius, mysterious..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "history",
+      "label": "History & Background",
+      "expanded": false,
+      "items": [
+        {
+          "type": "input",
+          "id": "history.dob",
+          "label": "Date of Birth",
+          "inputType": "date"
+        },
+        {
+          "type": "input",
+          "id": "history.birthplace",
+          "label": "Place of Birth",
+          "inputType": "text",
+          "placeholder": "City, Country"
+        },
+        {
+          "type": "repeater",
+          "id": "history.schools",
+          "label": "Schools Attended",
+          "columns": [
+            {
+              "key": "school_name",
+              "label": "School Name",
+              "type": "text"
+            },
+            {
+              "key": "years",
+              "label": "Years (YYYY–YYYY)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "repeater",
+          "id": "history.jobs",
+          "label": "Employment History",
+          "columns": [
+            {
+              "key": "employer",
+              "label": "Employer",
+              "type": "text"
+            },
+            {
+              "key": "position",
+              "label": "Position",
+              "type": "text"
+            },
+            {
+              "key": "years",
+              "label": "Years (YYYY–YYYY)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "repeater",
+          "id": "history.pastRelations",
+          "label": "Past Friends/Relationships",
+          "columns": [
+            {
+              "key": "name",
+              "label": "Name",
+              "type": "text"
+            },
+            {
+              "key": "relationship",
+              "label": "Relationship",
+              "type": "text"
+            },
+            {
+              "key": "years",
+              "label": "Years (YYYY–YYYY)",
+              "type": "text"
+            }
+          ]
+        },
+        {
+          "type": "repeater",
+          "id": "history.major.events",
+          "label": "Major Life Events",
+          "columns": [
+            {
+              "key": "year",
+              "label": "Year",
+              "type": "text"
+            },
+            {
+              "key": "event",
+              "label": "Event Description",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "species",
+      "label": "Species & Non-Human Traits",
+      "expanded": false,
+      "items": [
+        {
+          "type": "select",
+          "id": "species.base",
+          "label": "Base Species",
+          "options": [
+            "",
+            "Human",
+            "Canine (Dog/Wolf)",
+            "Feline (Cat/Lion/Tiger)",
+            "Vulpine (Fox)",
+            "Lupine (Wolf)",
+            "Ursine (Bear)",
+            "Equine (Horse)",
+            "Cervine (Deer)",
+            "Bovine (Cow/Bull)",
+            "Caprine (Goat)",
+            "Ovine (Sheep)",
+            "Porcine (Pig)",
+            "Mustelid (Otter/Ferret/Badger)",
+            "Rodent (Mouse/Rat/Squirrel)",
+            "Lagomorph (Rabbit/Hare)",
+            "Reptilian (Lizard/Snake)",
+            "Draconic (Dragon)",
+            "Avian (Bird)",
+            "Aquatic (Fish/Dolphin/Shark)",
+            "Amphibian (Frog/Salamander)",
+            "Insectoid",
+            "Arachnid (Spider)",
+            "Mythical (Phoenix/Gryphon/etc)",
+            "Alien",
+            "Synthetic (Robot/Android)",
+            "Eldritch/Cosmic",
+            "Slime/Goo Creature",
+            "Plant-based",
+            "Custom"
+          ],
+          "default": "Human"
+        },
+        {
+          "type": "input",
+          "id": "species.custom.name",
+          "label": "Custom Species Name",
+          "inputType": "text",
+          "placeholder": "If custom species..."
+        },
+        {
+          "type": "range",
+          "id": "species.humanity",
+          "label": "Human ← → Non-Human",
+          "min": 0,
+          "max": 100,
+          "unit": "%",
+          "showValue": true
+        },
+        {
+          "type": "group",
+          "id": "species.hybrid",
+          "label": "Hybrid Configuration",
+          "expanded": false,
+          "items": [
+            {
+              "type": "select",
+              "id": "species.hybrid.enabled",
+              "label": "Hybrid Type",
+              "options": ["None", "Two-way Hybrid", "Three-way Hybrid", "Chimera (Multiple)"],
+              "default": "None"
+            },
+            {
+              "type": "repeater",
+              "id": "species.hybrid.components",
+              "label": "Hybrid Components",
+              "columns": [
+                {
+                  "key": "species",
+                  "label": "Species",
+                  "type": "text"
+                },
+                {
+                  "key": "percentage",
+                  "label": "Percentage (0-100)",
+                  "type": "range",
+                  "min": 0,
+                  "max": 100
+                }
+              ]
+            },
+            {
+              "type": "input",
+              "id": "species.hybrid.description",
+              "label": "Hybrid Description",
+              "inputType": "text",
+              "placeholder": "Describe the hybrid appearance..."
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "species.form",
+          "label": "Body Form Type",
+          "expanded": false,
+          "items": [
+            {
+              "type": "select",
+              "id": "species.form.type",
+              "label": "Form Type",
+              "options": [
+                "Fully Human",
+                "Anthropomorphic (Anthro/Furry)",
+                "Feral (Quadruped Animal)",
+                "Taur (Centaur-style)",
+                "Naga (Snake lower body)",
+                "Mermaid/Merman (Fish lower body)",
+                "Lamia (Serpentine)",
+                "Drider (Spider lower body)",
+                "Digitigrade Biped",
+                "Plantigrade Biped",
+                "Reversed Joints",
+                "Amorphous/Shapeshifter",
+                "Custom"
+              ],
+              "default": "Fully Human"
+            },
+            {
+              "type": "range",
+              "id": "species.form.anthro.level",
+              "label": "Anthropomorphization Level",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "select",
+              "id": "species.stance.type",
+              "label": "Leg/Foot Structure",
+              "options": [
+                "Plantigrade (Human-like, flat feet)",
+                "Digitigrade (Walking on toes, animal-like)",
+                "Unguligrade (Hooves)",
+                "Paws",
+                "Claws/Talons",
+                "Tentacles",
+                "None/Floating"
+              ],
+              "default": "Plantigrade (Human-like, flat feet)"
+            },
+            {
+              "type": "input",
+              "id": "species.limbs.arms",
+              "label": "Number of Arms",
+              "inputType": "number",
+              "min": 0,
+              "max": 20,
+              "default": 2
+            },
+            {
+              "type": "input",
+              "id": "species.limbs.legs",
+              "label": "Number of Legs",
+              "inputType": "number",
+              "min": 0,
+              "max": 20,
+              "default": 2
+            },
+            {
+              "type": "select",
+              "id": "species.limbs.hands.type",
+              "label": "Hand Type",
+              "options": [
+                "Human Hands",
+                "Paws (Padded)",
+                "Claws",
+                "Hooves",
+                "Talons",
+                "Tentacles",
+                "Fins",
+                "Wings",
+                "None"
+              ],
+              "default": "Human Hands"
+            },
+            {
+              "type": "input",
+              "id": "species.limbs.fingers",
+              "label": "Fingers per Hand",
+              "inputType": "number",
+              "min": 0,
+              "max": 10,
+              "default": 5
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "species.head",
+          "label": "Head & Face Structure",
+          "expanded": false,
+          "items": [
+            {
+              "type": "select",
+              "id": "species.head.type",
+              "label": "Head Type",
+              "options": [
+                "Human",
+                "Anthropomorphic Animal Head",
+                "Full Animal Head",
+                "Hybrid Human-Animal",
+                "Reptilian",
+                "Avian (Beak)",
+                "Insectoid",
+                "Aquatic",
+                "Alien",
+                "Skull/Skeletal",
+                "Featureless",
+                "Custom"
+              ],
+              "default": "Human"
+            },
+            {
+              "type": "select",
+              "id": "species.head.muzzle",
+              "label": "Muzzle/Snout",
+              "options": [
+                "None (Flat face)",
+                "Slight Muzzle",
+                "Medium Muzzle",
+                "Long Muzzle",
+                "Beak",
+                "Trunk",
+                "Proboscis",
+                "Mandibles"
+              ],
+              "default": "None (Flat face)"
+            },
+            {
+              "type": "input",
+              "id": "species.head.muzzle.length.cm",
+              "label": "Muzzle Length",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "select",
+              "id": "species.head.teeth.type",
+              "label": "Teeth Type",
+              "options": [
+                "Human",
+                "Carnivore (Fangs/Sharp)",
+                "Herbivore (Flat)",
+                "Omnivore (Mixed)",
+                "Tusks",
+                "Beak (No teeth)",
+                "Baleen",
+                "Venomous Fangs",
+                "Shark-like (Multiple rows)",
+                "None"
+              ],
+              "default": "Human"
+            },
+            {
+              "type": "input",
+              "id": "species.head.fangs.length.cm",
+              "label": "Fang/Tusk Length",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.1
+            },
+            {
+              "type": "select",
+              "id": "species.head.tongue.type",
+              "label": "Tongue Type",
+              "options": [
+                "Human",
+                "Forked (Reptilian)",
+                "Long/Prehensile",
+                "Rough (Feline)",
+                "Sticky (Amphibian)",
+                "Multiple",
+                "None"
+              ],
+              "default": "Human"
+            },
+            {
+              "type": "input",
+              "id": "species.head.tongue.length.cm",
+              "label": "Tongue Length",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "select",
+              "id": "species.head.ears.type",
+              "label": "Ear Type",
+              "options": [
+                "Human",
+                "Pointed (Elf-like)",
+                "Animal Ears (Top of head)",
+                "Floppy/Droopy",
+                "Large/Fennec-style",
+                "Fin-like",
+                "Antennae",
+                "None/Internal"
+              ],
+              "default": "Human"
+            },
+            {
+              "type": "input",
+              "id": "species.head.ears.size.cm",
+              "label": "Ear Size",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 0.5
+            },
+            {
+              "type": "input",
+              "id": "species.head.horns.count",
+              "label": "Number of Horns",
+              "inputType": "number",
+              "min": 0,
+              "max": 20
+            },
+            {
+              "type": "input",
+              "id": "species.head.horns.length.cm",
+              "label": "Horn Length",
+              "inputType": "number",
+              "unit": "cm",
+              "min": 0,
+              "step": 1
+            },
+            {
+              "type": "select",
+              "id": "species.head.horns.type",
+              "label": "Horn Type",
+              "options": [
+                "None",
+                "Straight",
+                "Curved",
+                "Spiral",
+                "Branching (Antlers)",
+                "Ram-style",
+                "Demonic",
+                "Ossicones (Giraffe)"
+              ],
+              "default": "None"
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "species.skin",
+          "label": "Skin/Covering",
+          "expanded": false,
+          "items": [
+            {
+              "type": "select",
+              "id": "species.skin.type",
+              "label": "Skin/Covering Type",
+              "options": [
+                "Skin (Human-like)",
+                "Fur",
+                "Scales",
+                "Feathers",
+                "Chitin/Exoskeleton",
+                "Latex/Rubber",
+                "Slime/Goo",
+                "Metallic",
+                "Crystalline",
+                "Bark/Wood",
+                "Stone/Rock",
+                "Gel/Translucent",
+                "Energy/Plasma",
+                "Combination (Multiple types)"
+              ],
+              "default": "Skin (Human-like)"
+            },
+            {
+              "type": "input",
+              "id": "species.skin.combination",
+              "label": "Combination Description",
+              "inputType": "text",
+              "placeholder": "E.g., 'Scales on back, fur on belly'"
+            },
+            {
+              "type": "group",
+              "id": "species.skin.fur",
+              "label": "Fur Properties",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "range",
+                  "id": "species.skin.fur.length.cm",
+                  "label": "Fur Length",
+                  "min": 0,
+                  "max": 30,
+                  "step": 0.5,
+                  "unit": "cm",
+                  "showValue": true
+                },
+                {
+                  "type": "range",
+                  "id": "species.skin.fur.density",
+                  "label": "Fur Density",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                },
+                {
+                  "type": "select",
+                  "id": "species.skin.fur.texture",
+                  "label": "Fur Texture",
+                  "options": [
+                    "Smooth",
+                    "Fluffy",
+                    "Coarse",
+                    "Silky",
+                    "Wiry",
+                    "Curly",
+                    "Woolly"
+                  ],
+                  "default": "Smooth"
+                }
+              ]
+            },
+            {
+              "type": "group",
+              "id": "species.skin.scales",
+              "label": "Scale Properties",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "select",
+                  "id": "species.skin.scales.size",
+                  "label": "Scale Size",
+                  "options": [
+                    "Tiny/Granular",
+                    "Small",
+                    "Medium",
+                    "Large",
+                    "Plates"
+                  ],
+                  "default": "Medium"
+                },
+                {
+                  "type": "select",
+                  "id": "species.skin.scales.texture",
+                  "label": "Scale Texture",
+                  "options": [
+                    "Smooth",
+                    "Rough",
+                    "Keeled",
+                    "Overlapping",
+                    "Armored/Plated"
+                  ],
+                  "default": "Smooth"
+                },
+                {
+                  "type": "range",
+                  "id": "species.skin.scales.iridescence",
+                  "label": "Iridescence",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                }
+              ]
+            },
+            {
+              "type": "group",
+              "id": "species.skin.feathers",
+              "label": "Feather Parameters",
+              "expanded": false,
+              "items": [
+                { "type": "select", "id": "species.skin.feathers.type", "label": "Feather Type", "options": ["", "Contour", "Down", "Flight"], "default": "" },
+                { "type": "range", "id": "species.skin.feathers.coverage", "label": "Coverage", "min": 0, "max": 100, "unit": "%", "showValue": true }
+              ]
+            },
+            {
+              "type": "group",
+              "id": "species.skin.latex",
+              "label": "Latex Parameters",
+              "expanded": false,
+              "items": [
+                { "type": "range", "id": "species.skin.latex.gloss", "label": "Surface Gloss", "min": 0, "max": 100, "unit": "%", "showValue": true },
+                { "type": "range", "id": "species.skin.latex.elasticity", "label": "Elasticity", "min": 0, "max": 200, "unit": "%", "showValue": true },
+                { "type": "range", "id": "species.skin.latex.opacity", "label": "Opacity", "min": 0, "max": 100, "unit": "%", "showValue": true }
+              ]
+            },
+            {
+              "type": "group",
+              "id": "species.skin.goo",
+              "label": "Goo/Slime Parameters",
+              "expanded": false,
+              "items": [
+                { "type": "range", "id": "species.skin.goo.viscosity", "label": "Viscosity", "min": 0, "max": 200, "unit": "%", "showValue": true },
+                { "type": "range", "id": "species.skin.goo.transparency", "label": "Transparency", "min": 0, "max": 100, "unit": "%", "showValue": true },
+                { "type": "range", "id": "species.skin.goo.selfSupport", "label": "Body Cohesion", "min": 0, "max": 200, "unit": "%", "showValue": true }
+              ]
+            },
+            {
+              "type": "composite",
+              "label": "Primary Color",
+              "items": [
+                {
+                  "type": "input",
+                  "id": "species.skin.color.primary.hex",
+                  "label": "Primary color",
+                  "inputType": "color"
+                },
+                {
+                  "type": "input",
+                  "id": "species.skin.color.primary.name",
+                  "label": "Color name",
+                  "inputType": "text",
+                  "placeholder": "e.g., Golden, Black"
+                }
+              ]
+            },
+            {
+              "type": "composite",
+              "label": "Secondary Color",
+              "items": [
+                {
+                  "type": "input",
+                  "id": "species.skin.color.secondary.hex",
+                  "label": "Secondary color",
+                  "inputType": "color"
+                },
+                {
+                  "type": "input",
+                  "id": "species.skin.color.secondary.name",
+                  "label": "Color name",
+                  "inputType": "text",
+                  "placeholder": "e.g., White, Brown"
+                }
+              ]
+            },
+            {
+              "type": "composite",
+              "label": "Accent Color",
+              "items": [
+                {
+                  "type": "input",
+                  "id": "species.skin.color.accent.hex",
+                  "label": "Accent color",
+                  "inputType": "color"
+                },
+                {
+                  "type": "input",
+                  "id": "species.skin.color.accent.name",
+                  "label": "Color name",
+                  "inputType": "text",
+                  "placeholder": "e.g., Red, Blue"
+                }
+              ]
+            },
+            {
+              "type": "select",
+              "id": "species.skin.pattern",
+              "label": "Pattern Type",
+              "options": [
+                "Solid/Uniform",
+                "Striped (Tiger/Zebra)",
+                "Spotted (Leopard/Cheetah)",
+                "Patched (Cow/Calico)",
+                "Gradient/Ombre",
+                "Brindle",
+                "Marbled",
+                "Mottled",
+                "Countershading",
+                "Custom Pattern"
+              ],
+              "default": "Solid/Uniform"
+            },
+            {
+              "type": "input",
+              "id": "species.skin.pattern.description",
+              "label": "Pattern Description",
+              "inputType": "text",
+              "placeholder": "Describe pattern placement and details..."
+            },
+            {
+              "type": "range",
+              "id": "species.skin.luminescence",
+              "label": "Bioluminescence",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "species.skin.reflectivity",
+              "label": "Reflectivity/Shine",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "species.appendages",
+          "label": "Additional Appendages",
+          "expanded": false,
+          "items": [
+            {
+              "type": "group",
+              "id": "species.appendages.tail",
+              "label": "Tail",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "input",
+                  "id": "species.appendages.tail.count",
+                  "label": "Number of Tails",
+                  "inputType": "number",
+                  "min": 0,
+                  "max": 9
+                },
+                {
+                  "type": "select",
+                  "id": "species.appendages.tail.type",
+                  "label": "Tail Type",
+                  "options": [
+                    "None",
+                    "Mammalian (Furry)",
+                    "Reptilian (Scaled)",
+                    "Prehensile (Monkey-like)",
+                    "Fluffy (Fox/Wolf)",
+                    "Thin (Mouse/Rat)",
+                    "Thick (Alligator)",
+                    "Finned (Mermaid)",
+                    "Tufted (Lion)",
+                    "Forked/Split",
+                    "Whip-like",
+                    "Feathered",
+                    "Multiple tips",
+                    "Custom"
+                  ],
+                  "default": "None"
+                },
+                {
+                  "type": "input",
+                  "id": "species.appendages.tail.length.cm",
+                  "label": "Tail Length",
+                  "inputType": "number",
+                  "unit": "cm",
+                  "min": 0,
+                  "step": 1
+                },
+                {
+                  "type": "input",
+                  "id": "species.appendages.tail.thickness.cm",
+                  "label": "Tail Thickness (base)",
+                  "inputType": "number",
+                  "unit": "cm",
+                  "min": 0,
+                  "step": 0.5
+                },
+                {
+                  "type": "range",
+                  "id": "species.appendages.tail.fluffiness",
+                  "label": "Tail Fluffiness",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                },
+                {
+                  "type": "range",
+                  "id": "species.appendages.tail.prehensile",
+                  "label": "Prehensility",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                }
+              ]
+            },
+            {
+              "type": "group",
+              "id": "species.appendages.wings",
+              "label": "Wings",
+              "expanded": false,
+              "items": [
+                {
+                  "type": "input",
+                  "id": "species.appendages.wings.count",
+                  "label": "Number of Wings",
+                  "inputType": "number",
+                  "min": 0,
+                  "max": 12
+                },
+                {
+                  "type": "select",
+                  "id": "species.appendages.wings.type",
+                  "label": "Wing Type",
+                  "options": [
+                    "None",
+                    "Feathered (Bird/Angel)",
+                    "Bat/Demon (Leathery membrane)",
+                    "Insect (Transparent)",
+                    "Dragon (Scaled membrane)",
+                    "Fairy (Magical/Energy)",
+                    "Fins",
+                    "Custom"
+                  ],
+                  "default": "None"
+                },
+                {
+                  "type": "input",
+                  "id": "species.appendages.wings.span.cm",
+                  "label": "Wingspan",
+                  "inputType": "number",
+                  "unit": "cm",
+                  "min": 0,
+                  "step": 1
+                },
+                {
+                  "type": "range",
+                  "id": "species.appendages.wings.functional",
+                  "label": "Flight Capability",
+                  "min": 0,
+                  "max": 100,
+                  "unit": "%",
+                  "showValue": true
+                }
+              ]
+            },
+            {
+              "type": "repeater",
+              "id": "species.appendages.other",
+              "label": "Other Appendages",
+              "columns": [
+                {
+                  "key": "type",
+                  "label": "Type (tentacles, extra limbs, etc)",
+                  "type": "text"
+                },
+                {
+                  "key": "count",
+                  "label": "Count",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "label": "Description",
+                  "type": "text"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "species.special",
+          "label": "Special Features",
+          "expanded": false,
+          "items": [
+            {
+              "type": "input",
+              "id": "species.special.breasts.count",
+              "label": "Number of Breasts/Teats",
+              "inputType": "number",
+              "min": 0,
+              "max": 20
+            },
+            {
+              "type": "select",
+              "id": "species.special.breasts.arrangement",
+              "label": "Breast Arrangement",
+              "options": [
+                "Standard (2 on chest)",
+                "Multiple rows (Canine/Feline)",
+                "Scattered",
+                "Clustered",
+                "Custom"
+              ],
+              "default": "Standard (2 on chest)"
+            },
+            {
+              "type": "input",
+              "id": "species.special.genitals.count",
+              "label": "Number of Genital Sets",
+              "inputType": "number",
+              "min": 0,
+              "max": 10
+            },
+            {
+              "type": "select",
+              "id": "species.special.genitals.type",
+              "label": "Genital Type",
+              "options": [
+                "Human-like",
+                "Animal-based (Sheath/Knot/etc)",
+                "Cloaca",
+                "Hermaphroditic",
+                "Ovipositor",
+                "Tentacles",
+                "None/Featureless",
+                "Custom"
+              ],
+              "default": "Human-like"
+            },
+            {
+              "type": "input",
+              "id": "species.special.eyes.count",
+              "label": "Number of Eyes",
+              "inputType": "number",
+              "min": 0,
+              "max": 20
+            },
+            {
+              "type": "select",
+              "id": "species.special.eyes.type",
+              "label": "Eye Type",
+              "options": [
+                "Human",
+                "Slit Pupils (Reptilian/Feline)",
+                "Horizontal Pupils (Goat)",
+                "Compound (Insect)",
+                "Glowing",
+                "Faceted/Gemlike",
+                "Single Color (No pupil)",
+                "Multiple pupils per eye"
+              ],
+              "default": "Human"
+            },
+            {
+              "type": "select",
+              "id": "species.special.size.category",
+              "label": "Size Category",
+              "options": [
+                "Micro (Tiny/Fairy-sized)",
+                "Small (Halfling/Child-sized)",
+                "Medium (Human-sized)",
+                "Large (Ogre/Minotaur)",
+                "Huge (Giant)",
+                "Gargantuan (Kaiju)",
+                "Variable (Shapeshifter)"
+              ],
+              "default": "Medium (Human-sized)"
+            },
+            {
+              "type": "range",
+              "id": "species.special.shapeshifting",
+              "label": "Shapeshifting Ability",
+              "min": 0,
+              "max": 100,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "range",
+              "id": "species.special.regeneration",
+              "label": "Regeneration Rate",
+              "min": 0,
+              "max": 300,
+              "unit": "%",
+              "showValue": true
+            },
+            {
+              "type": "tags",
+              "id": "species.special.abilities",
+              "label": "Special Abilities",
+              "placeholder": "fire breath, venom, telepathy..."
+            }
+          ]
+        },
+        {
+          "type": "group",
+          "id": "species.voice",
+          "label": "Voice & Communication",
+          "expanded": false,
+          "items": [
+            {
+              "type": "select",
+              "id": "species.voice.capability",
+              "label": "Speech Capability",
+              "options": [
+                "Full Human Speech",
+                "Accented Speech (Animal influence)",
+                "Limited Speech",
+                "Animal Sounds Only",
+                "Telepathic",
+                "Hisses/Growls",
+                "Chirps/Trills",
+                "Clicks/Ultrasonic",
+                "None/Mute"
+              ],
+              "default": "Full Human Speech"
+            },
+            {
+              "type": "input",
+              "id": "species.voice.description",
+              "label": "Voice Description",
+              "inputType": "text",
+              "placeholder": "Describe voice quality, accent, etc..."
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "ui": {
+    "colors": {
+      "background": "#0b0f10",
+      "panel": "#0d1214",
+      "text": "#cfe9d6",
+      "muted": "#8aa39a",
+      "accent": "#00e0a4",
+      "accent2": "#00b3ff",
+      "danger": "#ff5a7a",
+      "warning": "#ffce3a",
+      "good": "#55ff88",
+      "border": "#1b2a2c"
+    },
+    "effects": {
+      "scanlines": true,
+      "glowEffects": true,
+      "retro": true
+    }
+  },
+  "templates": {
+    "customCommands": [
+      "set physical.height = 182 cm",
+      "boost charisma +15%",
+      "reset all mental parameters",
+      "maximize attraction to user",
+      "set sexuality.libido = 150%"
+    ]
+  }
+}

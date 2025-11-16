@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Master PC</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="loading" id="loadingScreen">
+  <div class="loading-text">Loading Master PC...</div>
+</div>
+<div class="app" style="display:none;" id="mainApp">
+  <div class="header">
+    <div class="title-row">
+      <div class="title">
+        <span class="dot"></span> 
+        <span id="appTitle">MASTER PC</span> 
+        <span class="subtitle" id="appSubtitle">Reality Configuration Console</span>
+      </div>
+      <div class="right-ops">
+        <span class="pill">Awareness:
+          <select id="awarenessSelect"></select>
+        </span>
+        <span class="pill"><label>Auto-Apply</label><input id="autoApply" type="checkbox" /></span>
+        <button id="applyBtn" class="warn">Apply Changes</button>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="block">
+        <label for="subjectInput">Select Subject</label>
+        <input id="subjectInput" type="text" placeholder="Type a name..." list="knownSubjects" />
+        <datalist id="knownSubjects"></datalist>
+        <button id="selectSubjectBtn">Set</button>
+        <span class="pill">Current: <span id="currentSubject" class="subject-name">None</span></span>
+      </div>
+      <div class="block">
+        <button id="saveBtn" class="secondary">Save Parameters</button>
+        <button id="loadBtn" class="secondary">Load Parameters</button>
+        <button id="lockBtn" class="danger">Lock Parameters</button>
+        <span id="lockState" class="pill ghost">Unlocked</span>
+        <input id="configUpload" type="file" accept="application/json" style="display:none" />
+      </div>
+      <div class="block">
+        <button id="expandAllBtn" class="mini">Expand All</button>
+        <button id="collapseAllBtn" class="mini">Collapse All</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT: Preview + Commands -->
+    <div class="panel">
+      <h3>Live Preview</h3>
+      <div class="preview" id="preview">
+        <div class="subject-badge" id="previewBadge">No Subject</div>
+        <img id="previewImg" alt="" style="display:none;" />
+        <div class="placeholder" id="previewPh">
+          No image loaded.<br/>
+          Use the upload below to set a subject portrait.
+        </div>
+        <div class="mask"></div>
+      </div>
+      <div class="upload-row">
+        <input id="imgUpload" type="file" accept="image/*" />
+        <button id="clearImgBtn">Clear</button>
+      </div>
+
+      <h3>Custom Commands</h3>
+      <textarea id="customCmd" placeholder='E.g. "set physical.height = 182 cm" or "boost charisma +15%"'></textarea>
+      <div class="upload-row">
+        <button id="queueCmdBtn">Queue Command</button>
+        <span class="note">Commands are added to the Change Queue. With Auto-Apply ON, they apply immediately.</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: Parameters -->
+    <div class="panel">
+      <h3>Parameters</h3>
+      <div id="paramsPanel" class="params">
+        <!-- Dynamically generated from JSON -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer Logs -->
+  <div class="footer">
+    <div class="log">
+      <h4>Change Queue</h4>
+      <div id="queueList" class="content"></div>
+      <div class="controls">
+        <button id="clearQueueBtn">Clear Queue</button>
+        <span class="note">Queued changes will be applied with the Apply button unless Auto-Apply is ON.</span>
+      </div>
+    </div>
+    <div class="log">
+      <h4>Applied Log</h4>
+      <div id="appliedList" class="content"></div>
+      <div class="controls">
+        <button id="clearAppliedBtn">Clear Log</button>
+        <span class="note">Saved locally per subject. Awareness: <span id="awarenessEcho" class="kbd">Everyone</span></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* Master PC Dynamic UI from JSON Schema */
+(function(){
+  const $ = sel => document.querySelector(sel);
+  const $$ = sel => Array.from(document.querySelectorAll(sel));
+
+  let schema = null; // Will hold the loaded JSON schema
+  let currentSubject = null;
+  let locked = false;
+  const currentParams = new Map();
+  const stagedChanges = new Map();
+  const appliedLog = [];
+
+  const els = {
+    loadingScreen: $('#loadingScreen'),
+    mainApp: $('#mainApp'),
+    appTitle: $('#appTitle'),
+    appSubtitle: $('#appSubtitle'),
+    subjectInput: $('#subjectInput'),
+    selectSubjectBtn: $('#selectSubjectBtn'),
+    currentSubject: $('#currentSubject'),
+    awareness: $('#awarenessSelect'),
+    awarenessEcho: $('#awarenessEcho'),
+    autoApply: $('#autoApply'),
+    applyBtn: $('#applyBtn'),
+    saveBtn: $('#saveBtn'),
+    loadBtn: $('#loadBtn'),
+    lockBtn: $('#lockBtn'),
+    lockState: $('#lockState'),
+    expandAll: $('#expandAllBtn'),
+    collapseAll: $('#collapseAllBtn'),
+    paramsPanel: $('#paramsPanel'),
+    queueList: $('#queueList'),
+    appliedList: $('#appliedList'),
+    clearQueueBtn: $('#clearQueueBtn'),
+    clearAppliedBtn: $('#clearAppliedBtn'),
+    customCmd: $('#customCmd'),
+    queueCmdBtn: $('#queueCmdBtn'),
+    previewBadge: $('#previewBadge'),
+    previewImg: $('#previewImg'),
+    previewPh: $('#previewPh'),
+    imgUpload: $('#imgUpload'),
+    clearImgBtn: $('#clearImgBtn'),
+    knownSubjects: $('#knownSubjects'),
+    configUpload: $('#configUpload')
+  };
+
+  // Load schema and initialize
+  async function init(){
+    try {
+      // Load the JSON schema
+      const response = await fetch('def.json');
+      if (!response.ok) throw new Error('Failed to load schema');
+      schema = await response.json();
+      
+      // Apply UI config
+      applyUIConfig();
+      
+      // Build the UI
+      buildParameterUI();
+      
+      // Hook up event handlers
+      hookToolbar();
+      
+      // Initialize displays
+      renderQueue();
+      renderApplied();
+      updateAwarenessEcho();
+      loadKnownSubjects();
+      updateLockState();
+      
+      // Show app
+      els.loadingScreen.style.display = 'none';
+      els.mainApp.style.display = '';
+    } catch(err) {
+      console.error('Failed to initialize:', err);
+      els.loadingScreen.innerHTML = `<div style="color:var(--danger)">Failed to load configuration: ${err.message}</div>`;
+    }
+  }
+
+  function applyUIConfig(){
+    // Apply metadata
+    if (schema.meta) {
+      els.appTitle.textContent = schema.meta.title || 'MASTER PC';
+      els.appSubtitle.textContent = schema.meta.subtitle || '';
+      
+      // Set awareness options
+      if (schema.meta.awareness) {
+        els.awareness.innerHTML = '';
+        schema.meta.awareness.options.forEach(opt => {
+          const option = document.createElement('option');
+          option.value = opt;
+          option.textContent = opt;
+          els.awareness.appendChild(option);
+        });
+        els.awareness.value = schema.meta.awareness.default;
+      }
+      
+      els.autoApply.checked = schema.meta.autoApply || false;
+    }
+    
+    // Apply colors if specified
+    if (schema.ui && schema.ui.colors) {
+      const root = document.documentElement;
+      Object.entries(schema.ui.colors).forEach(([key, value]) => {
+        const varName = '--' + key.replace(/([A-Z])/g, '-$1').toLowerCase();
+        root.style.setProperty(varName, value);
+      });
+    }
+  }
+
+  function buildParameterUI(){
+    els.paramsPanel.innerHTML = '';
+    
+    if (!schema.parameterGroups) {
+      els.paramsPanel.innerHTML = '<div class="note">No parameters defined</div>';
+      return;
+    }
+    
+    schema.parameterGroups.forEach(group => {
+      const groupEl = renderGroup(group);
+      els.paramsPanel.appendChild(groupEl);
+    });
+    
+    // Hook up all dynamic inputs
+    hookDynamicInputs();
+  }
+
+  function renderGroup(group){
+    const details = document.createElement('details');
+    details.dataset.group = group.id;
+    if (group.expanded) details.open = true;
+    
+    const summary = document.createElement('summary');
+    summary.innerHTML = `<span class="triangle">▶</span> ${escapeHtml(group.label)}`;
+    details.appendChild(summary);
+    
+    const body = document.createElement('div');
+    body.className = 'group-body';
+    
+    if (group.items) {
+      group.items.forEach(item => {
+        const el = renderItem(item);
+        if (el) body.appendChild(el);
+      });
+    }
+    
+    details.appendChild(body);
+    return details;
+  }
+
+  function renderItem(item){
+    switch(item.type) {
+      case 'group':
+        return renderGroup(item);
+      case 'input':
+        return renderInput(item);
+      case 'range':
+        return renderRange(item);
+      case 'select':
+        return renderSelect(item);
+      case 'tags':
+        return renderTags(item);
+      case 'repeater':
+        return renderRepeater(item);
+      case 'composite':
+        return renderComposite(item);
+      default:
+        console.warn('Unknown item type:', item.type);
+        return null;
+    }
+  }
+
+  function renderInput(item){
+    const row = document.createElement('div');
+    row.className = 'row';
+    
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = item.label;
+    row.appendChild(labelDiv);
+    
+    const inputDiv = document.createElement('div');
+    const input = document.createElement('input');
+    input.type = item.inputType || 'text';
+    input.className = 'param';
+    input.dataset.param = item.id;
+    input.dataset.label = item.label;
+    
+    if (item.unit) input.dataset.unit = item.unit;
+    if (item.placeholder) input.placeholder = item.placeholder;
+    if (item.min !== undefined) input.min = item.min;
+    if (item.max !== undefined) input.max = item.max;
+    if (item.step !== undefined) input.step = item.step;
+    
+    inputDiv.appendChild(input);
+    row.appendChild(inputDiv);
+    
+    const unitDiv = document.createElement('div');
+    unitDiv.className = 'unit';
+    unitDiv.textContent = item.unit || '';
+    row.appendChild(unitDiv);
+    
+    return row;
+  }
+
+  function renderRange(item){
+    const row = document.createElement('div');
+    row.className = 'row';
+    
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = item.label;
+    row.appendChild(labelDiv);
+    
+    const sliderRow = document.createElement('div');
+    sliderRow.className = 'slider-row';
+    sliderRow.style.gridColumn = 'span 2';
+    
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.className = 'param';
+    input.dataset.param = item.id;
+    input.dataset.label = item.label;
+    input.min = item.min || 0;
+    input.max = item.max || 100;
+    input.step = item.step || 1;
+    if (item.unit) input.dataset.unit = item.unit;
+    
+    const bubble = document.createElement('div');
+    bubble.className = 'value-bubble';
+    bubble.textContent = item.unit || '%';
+    
+    sliderRow.appendChild(input);
+    if (item.showValue) sliderRow.appendChild(bubble);
+    row.appendChild(sliderRow);
+    
+    return row;
+  }
+
+  function renderSelect(item){
+    const row = document.createElement('div');
+    row.className = 'row';
+    
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = item.label;
+    row.appendChild(labelDiv);
+    
+    const selectDiv = document.createElement('div');
+    const select = document.createElement('select');
+    select.className = 'param';
+    select.dataset.param = item.id;
+    select.dataset.label = item.label;
+    
+    if (item.options) {
+      item.options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt || '—';
+        select.appendChild(option);
+      });
+    }
+    
+    if (item.default) select.value = item.default;
+    
+    selectDiv.appendChild(select);
+    row.appendChild(selectDiv);
+    
+    const unitDiv = document.createElement('div');
+    unitDiv.className = 'unit';
+    row.appendChild(unitDiv);
+    
+    return row;
+  }
+
+  function renderTags(item){
+    const row = document.createElement('div');
+    row.className = 'row';
+    
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = item.label;
+    row.appendChild(labelDiv);
+    
+    const tagInput = document.createElement('div');
+    tagInput.className = 'tag-input';
+    tagInput.dataset.param = item.id;
+    tagInput.dataset.label = item.label;
+    
+    const ghost = document.createElement('span');
+    ghost.className = 'tag ghost';
+    ghost.textContent = 'Type then press Enter';
+    tagInput.appendChild(ghost);
+    
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = item.placeholder || '';
+    tagInput.appendChild(input);
+    
+    row.appendChild(tagInput);
+    
+    const unitDiv = document.createElement('div');
+    unitDiv.className = 'unit';
+    row.appendChild(unitDiv);
+    
+    return row;
+  }
+
+  function renderRepeater(item){
+    const rep = document.createElement('div');
+    rep.className = 'repeater' + (item.compact ? ' compact' : '');
+    rep.dataset.repeater = item.id;
+    rep.dataset.label = item.label;
+    
+    // Store column definitions
+    rep.dataset.columns = JSON.stringify(item.columns);
+    
+    const head = document.createElement('div');
+    head.className = 'rep-head';
+    
+    const label = document.createElement('span');
+    label.textContent = item.label;
+    head.appendChild(label);
+    
+    const addBtn = document.createElement('button');
+    addBtn.className = 'mini rep-add';
+    addBtn.textContent = 'Add';
+    head.appendChild(addBtn);
+    
+    const list = document.createElement('div');
+    list.className = 'rep-list';
+    
+    rep.appendChild(head);
+    rep.appendChild(list);
+    
+    return rep;
+  }
+
+  function renderComposite(item){
+    const row = document.createElement('div');
+    row.className = 'row';
+    
+    const labelDiv = document.createElement('div');
+    labelDiv.className = 'label';
+    labelDiv.textContent = item.label;
+    row.appendChild(labelDiv);
+    
+    const composite = document.createElement('div');
+    composite.className = 'composite-row';
+    composite.style.gridColumn = 'span 2';
+    
+    if (item.items) {
+      item.items.forEach(subItem => {
+        if (subItem.type === 'input') {
+          const input = document.createElement('input');
+          input.type = subItem.inputType || 'text';
+          input.className = 'param';
+          input.dataset.param = subItem.id;
+          input.dataset.label = subItem.label;
+          if (subItem.placeholder) input.placeholder = subItem.placeholder;
+          composite.appendChild(input);
+        }
+      });
+    }
+    
+    row.appendChild(composite);
+    return row;
+  }
+
+  function hookDynamicInputs(){
+    // Hook param inputs
+    $$('.param').forEach(input => {
+      const label = input.dataset.label || input.dataset.param;
+      if (input.type === 'range') {
+        input.addEventListener('input', e => {
+          const val = String(e.target.value);
+          const bubble = findSiblingBubble(e.target);
+          if (bubble) bubble.textContent = val;
+          queueParamChange(e.target, val, label);
+        });
+      } else if (input.type === 'color') {
+        input.addEventListener('input', e => {
+          queueParamChange(e.target, e.target.value, label);
+        });
+      } else {
+        input.addEventListener('change', e => {
+          queueParamChange(e.target, e.target.value, label);
+        });
+      }
+    });
+    
+    // Hook tag inputs
+    $$('.tag-input').forEach(container => {
+      const input = container.querySelector('input');
+      container.addEventListener('click', () => input.focus());
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && input.value.trim()) {
+          e.preventDefault();
+          addTag(container, input.value.trim());
+          input.value = '';
+          recordTagChange(container);
+        } else if (e.key === 'Backspace' && !input.value) {
+          const last = container.querySelector('.tag:not(.ghost):last-of-type');
+          if (last) { last.remove(); recordTagChange(container); }
+        }
+      });
+    });
+    
+    // Hook repeaters
+    $$('.repeater').forEach(rep => {
+      const addBtn = rep.querySelector('.rep-add');
+      addBtn.addEventListener('click', () => {
+        const columns = JSON.parse(rep.dataset.columns || '[]');
+        addRepeaterRow(rep, columns, {});
+      });
+    });
+  }
+
+  function addRepeaterRow(rep, columns, data){
+    const list = rep.querySelector('.rep-list');
+    const row = document.createElement('div');
+    const colCount = columns.length;
+    row.className = 'rep-row';
+    row.style.gridTemplateColumns = columns.map(() => '1fr').join(' ') + ' auto';
+    
+    columns.forEach(col => {
+      const wrap = document.createElement('div');
+      
+      if (col.type === 'range') {
+        wrap.style.display = 'grid';
+        wrap.style.gridTemplateColumns = '1fr 50px';
+        wrap.style.gap = '6px';
+        
+        const range = document.createElement('input');
+        range.type = 'range';
+        range.min = col.min || 0;
+        range.max = col.max || 100;
+        range.value = data[col.key] || 0;
+        
+        const bubble = document.createElement('div');
+        bubble.className = 'value-bubble';
+        bubble.textContent = range.value;
+        
+        range.addEventListener('input', () => {
+          bubble.textContent = range.value;
+          recordRepeater(rep);
+        });
+        
+        wrap.appendChild(range);
+        wrap.appendChild(bubble);
+      } else {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = col.label;
+        input.value = data[col.key] || '';
+        input.addEventListener('change', () => recordRepeater(rep));
+        wrap.appendChild(input);
+      }
+      
+      row.appendChild(wrap);
+    });
+    
+    const del = document.createElement('button');
+    del.className = 'mini danger kill';
+    del.textContent = 'Delete';
+    del.addEventListener('click', () => {
+      row.remove();
+      recordRepeater(rep);
+    });
+    row.appendChild(del);
+    
+    list.appendChild(row);
+  }
+
+  function recordRepeater(rep){
+    const param = rep.dataset.repeater;
+    const label = rep.dataset.label || param;
+    const columns = JSON.parse(rep.dataset.columns || '[]');
+    const rows = [...rep.querySelectorAll('.rep-row')];
+    
+    const data = rows.map(r => {
+      const obj = {};
+      let colIdx = 0;
+      r.querySelectorAll('input').forEach(inp => {
+        const col = columns[colIdx];
+        if (col) {
+          obj[col.key] = inp.type === 'range' ? Number(inp.value) : inp.value.trim();
+        }
+        colIdx++;
+      });
+      return obj;
+    });
+    
+    const summary = data.map(obj => Object.values(obj).filter(v => String(v).length > 0).join(' | ')).filter(Boolean).join('; ');
+    queueChange(param, summary, label);
+    currentParams.set(param, JSON.stringify(data));
+  }
+
+  function hookToolbar(){
+    els.selectSubjectBtn.addEventListener('click', setSubjectFromInput);
+    els.awareness.addEventListener('change', () => {
+      queueChange('meta.awareness', els.awareness.value, 'Awareness');
+      updateAwarenessEcho();
+    });
+    els.autoApply.addEventListener('change', () => {
+      queueChange('meta.autoApply', els.autoApply.checked ? 'ON' : 'OFF', 'Auto-apply');
+    });
+    els.applyBtn.addEventListener('click', applyAllQueued);
+    els.saveBtn.addEventListener('click', exportConfigFile);
+    els.loadBtn.addEventListener('click', () => els.configUpload.click());
+    els.configUpload.addEventListener('change', importConfigFromFile);
+    els.lockBtn.addEventListener('click', toggleLock);
+    els.expandAll.addEventListener('click', () => setAllDetails(true));
+    els.collapseAll.addEventListener('click', () => setAllDetails(false));
+    els.clearQueueBtn.addEventListener('click', clearQueue);
+    els.clearAppliedBtn.addEventListener('click', clearApplied);
+    els.queueCmdBtn.addEventListener('click', queueCommand);
+    els.imgUpload.addEventListener('change', handleImageUpload);
+    els.clearImgBtn.addEventListener('click', clearImage);
+  }
+
+  function setSubjectFromInput(){
+    const name = (els.subjectInput.value || '').trim();
+    if (!name) { alert('Enter a subject name.'); return; }
+    setCurrentSubject(name);
+    loadLocalParamsIntoUI(true);
+    loadSubjectImage();
+    addKnownSubject(name);
+  }
+
+  function setCurrentSubject(name, opts = {}){
+    const { silent = false } = opts;
+    if (!name) return;
+    if (currentSubject && name !== currentSubject && (stagedChanges.size || appliedLog.length) && !silent) {
+      if (!confirm('Switch subject? Unsaved queued changes will be cleared.')) return;
+    }
+    currentSubject = name;
+    els.currentSubject.textContent = name;
+    els.previewBadge.textContent = name;
+    stagedChanges.clear();
+    currentParams.clear();
+    renderQueue();
+    renderApplied();
+  }
+
+  function addKnownSubject(name){
+    if (![...els.knownSubjects.options].some(o => o.value === name)) {
+      const opt = document.createElement('option');
+      opt.value = name;
+      els.knownSubjects.appendChild(opt);
+      persistKnownSubjects();
+    }
+  }
+
+  function loadKnownSubjects(){
+    const ls = JSON.parse(localStorage.getItem('masterpc_subjects') || '[]');
+    ls.forEach(s => addKnownSubject(s));
+  }
+
+  function persistKnownSubjects(){
+    const arr = [...els.knownSubjects.options].map(o => o.value).filter(Boolean);
+    localStorage.setItem('masterpc_subjects', JSON.stringify(arr));
+  }
+
+  function updateAwarenessEcho(){
+    els.awarenessEcho.textContent = els.awareness.value;
+  }
+
+  function toggleLock(){
+    locked = !locked;
+    updateLockState();
+  }
+
+  function updateLockState(){
+    els.lockState.textContent = locked ? 'Locked' : 'Unlocked';
+    els.lockState.style.color = locked ? 'var(--danger)' : 'var(--muted)';
+    $$('#paramsPanel input, #paramsPanel select, #paramsPanel textarea, #paramsPanel button').forEach(el => {
+      el.disabled = locked;
+    });
+    els.customCmd.disabled = locked;
+    els.queueCmdBtn.disabled = locked;
+    els.applyBtn.disabled = locked;
+  }
+
+  function setAllDetails(open){
+    $$('#paramsPanel details').forEach(d => d.open = open);
+  }
+
+  function handleImageUpload(e){
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      els.previewImg.src = reader.result;
+      els.previewImg.style.display = 'block';
+      els.previewPh.style.display = 'none';
+      if (currentSubject) {
+        localStorage.setItem(subjectKey('image'), reader.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function clearImage(){
+    els.previewImg.src = '';
+    els.previewImg.style.display = 'none';
+    els.previewPh.style.display = 'block';
+    if (currentSubject) {
+      localStorage.removeItem(subjectKey('image'));
+    }
+  }
+
+  function loadSubjectImage(){
+    if (!currentSubject) { clearImage(); return; }
+    const data = localStorage.getItem(subjectKey('image'));
+    if (data) {
+      els.previewImg.src = data;
+      els.previewImg.style.display = 'block';
+      els.previewPh.style.display = 'none';
+    } else {
+      clearImage();
+    }
+  }
+
+  function subjectKey(suffix){
+    if (!currentSubject) return null;
+    return `masterpc.subject.${currentSubject}.${suffix}`;
+  }
+
+  function findSiblingBubble(rangeEl){
+    const row = rangeEl.closest('.slider-row');
+    if (!row) return null;
+    return row.querySelector('.value-bubble');
+  }
+
+  function addTag(container, text){
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = text;
+    const x = document.createElement('span');
+    x.className = 'x';
+    x.textContent = '×';
+    x.title = 'Remove';
+    x.addEventListener('click', () => {
+      tag.remove();
+      recordTagChange(container);
+    });
+    tag.appendChild(x);
+    const ghost = container.querySelector('.tag.ghost');
+    if (ghost) ghost.remove();
+    container.insertBefore(tag, container.querySelector('input'));
+  }
+
+  function recordTagChange(container){
+    const param = container.dataset.param;
+    const label = container.dataset.label || param;
+    const tags = [...container.querySelectorAll('.tag:not(.ghost)')].map(t => t.childNodes[0].nodeValue.trim());
+    queueChange(param, tags.join(', '), label);
+  }
+
+  function queueParamChange(input, val, label){
+    const param = input.dataset.param;
+    queueChange(param, val, label, input.dataset.unit);
+  }
+
+  function normalizeValForDisplay(val, unit){
+    if (val === null || val === undefined) return '—';
+    if (unit) return `${val} ${unit}`;
+    return String(val);
+  }
+
+  function queueChange(param, to, label, unit){
+    if (!currentSubject) {
+      alert('Select a subject first.');
+      return;
+    }
+    const from = currentParams.has(param) ? currentParams.get(param) : '—';
+    if (String(from) === String(to)) {
+      stagedChanges.delete(param);
+      renderQueue();
+      return;
+    }
+    stagedChanges.set(param, {from, to, label: label || param, unit: unit || ''});
+    renderQueue();
+    if (els.autoApply.checked) {
+      applyChange(param, from, to, label, unit);
+      stagedChanges.delete(param);
+      renderQueue();
+    }
+  }
+
+  function renderQueue(){
+    els.queueList.innerHTML = '';
+    if (!stagedChanges.size) {
+      const e = document.createElement('div');
+      e.className = 'note';
+      e.textContent = 'No queued changes.';
+      els.queueList.appendChild(e);
+      return;
+    }
+    for (const [param, ch] of stagedChanges.entries()) {
+      const div = document.createElement('div');
+      div.className = 'change';
+      div.innerHTML = `<span class="verb">SET</span> <span class="path">${escapeHtml(ch.label)}</span>
+        <span class="from">[${escapeHtml(normalizeValForDisplay(ch.from, ch.unit))}]</span>
+        → <span class="to">${escapeHtml(normalizeValForDisplay(ch.to, ch.unit))}</span>`;
+      els.queueList.appendChild(div);
+    }
+  }
+
+  function renderApplied(){
+    els.appliedList.innerHTML = '';
+    if (!appliedLog.length) {
+      const e = document.createElement('div');
+      e.className = 'note';
+      e.textContent = 'No applied changes yet.';
+      els.appliedList.appendChild(e);
+      return;
+    }
+    appliedLog.slice(-500).forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'change';
+      if (item.cmd) {
+        div.innerHTML = `<span class="verb">CMD</span> <span class="path">${escapeHtml(item.cmd)}</span>
+          <span class="from ghost">@${new Date(item.ts).toLocaleTimeString()}</span>`;
+      } else {
+        div.innerHTML = `<span class="verb">APPLY</span> <span class="path">${escapeHtml(item.label)}</span>
+          <span class="from">[${escapeHtml(normalizeValForDisplay(item.from, item.unit))}]</span>
+          → <span class="to">${escapeHtml(normalizeValForDisplay(item.to, item.unit))}</span>
+          <span class="from ghost">@${new Date(item.ts).toLocaleTimeString()}</span>`;
+      }
+      els.appliedList.appendChild(div);
+    });
+  }
+
+  function applyAllQueued(){
+    if (locked) {
+      alert('Parameters are locked. Unlock to apply changes.');
+      return;
+    }
+    if (!stagedChanges.size) {
+      alert('No queued changes.');
+      return;
+    }
+    for (const [param, ch] of stagedChanges.entries()) {
+      applyChange(param, ch.from, ch.to, ch.label, ch.unit);
+    }
+    stagedChanges.clear();
+    renderQueue();
+    persistSubjectState();
+  }
+
+  function applyChange(param, from, to, label, unit){
+    currentParams.set(param, to);
+    appliedLog.push({param, from, to, label: label || param, unit: unit || '', ts: Date.now()});
+    renderApplied();
+  }
+
+  function clearQueue(){
+    stagedChanges.clear();
+    renderQueue();
+  }
+
+  function clearApplied(){
+    if (!confirm('Clear applied log?')) return;
+    appliedLog.length = 0;
+    renderApplied();
+  }
+
+  function queueCommand(){
+    const txt = (els.customCmd.value || '').trim();
+    if (!txt) { alert('Type a command.'); return; }
+    if (!currentSubject) { alert('Select a subject first.'); return; }
+    if (els.autoApply.checked) {
+      appliedLog.push({cmd: txt, ts: Date.now()});
+      renderApplied();
+    } else {
+      stagedChanges.set(`cmd.${Date.now()}.${Math.random().toString(36).slice(2)}`, {from: '—', to: txt, label: 'Command', unit: ''});
+      renderQueue();
+    }
+    els.customCmd.value = '';
+  }
+
+  function persistSubjectState(){
+    const obj = {};
+    currentParams.forEach((v, k) => obj[k] = v);
+    const state = {
+      subject: currentSubject,
+      params: obj,
+      applied: appliedLog,
+      awareness: els.awareness.value,
+      autoApply: els.autoApply.checked
+    };
+    localStorage.setItem(subjectKey('state'), JSON.stringify(state));
+  }
+
+  function loadLocalParamsIntoUI(silent = false){
+    if (!currentSubject) { if (!silent) alert('Select a subject first.'); return; }
+    const raw = localStorage.getItem(subjectKey('state'));
+    if (!raw) { if (!silent) alert('No saved parameters for this subject.'); resetParamUI(); return; }
+    try {
+      const state = JSON.parse(raw);
+      els.awareness.value = state.awareness || schema.meta.awareness.default;
+      els.autoApply.checked = !!state.autoApply;
+      updateAwarenessEcho();
+      currentParams.clear();
+      for (const k in state.params) { currentParams.set(k, state.params[k]); }
+      applyParamsToInputs();
+      appliedLog.length = 0;
+      (state.applied || []).forEach(x => appliedLog.push(x));
+      renderApplied();
+      stagedChanges.clear(); renderQueue();
+      if (!silent) alert('Parameters loaded from local storage.');
+    } catch(err) {
+      console.error(err);
+      if (!silent) alert('Failed to load parameters.');
+    }
+  }
+
+  function resetParamUI(){
+    $$('.param').forEach(el => {
+      if (el.type === 'range') { 
+        el.value = el.min || 0; 
+        const b = findSiblingBubble(el); 
+        if (b) b.textContent = '—'; 
+      } else if (el.type === 'color') { 
+        el.value = '#000000'; 
+      } else { 
+        el.value = ''; 
+      }
+    });
+    $$('.tag-input').forEach(ti => {
+      ti.querySelectorAll('.tag:not(.ghost)').forEach(t => t.remove());
+    });
+    $$('.repeater .rep-list').forEach(list => list.innerHTML = '');
+  }
+
+  function applyParamsToInputs(){
+    $$('.param').forEach(el => {
+      const p = el.dataset.param;
+      if (!currentParams.has(p)) return;
+      let v = currentParams.get(p);
+      if (el.type === 'range') {
+        const min = Number(el.min || 0), max = Number(el.max || 100);
+        let n = Number(v);
+        if (Number.isFinite(n)) {
+          if (n < min) n = min;
+          if (n > max) n = max;
+          el.value = String(n);
+        } else {
+          el.value = String(min);
+        }
+        const b = findSiblingBubble(el);
+        if (b) b.textContent = el.value;
+      } else {
+        el.value = v;
+      }
+    });
+    $$('.tag-input').forEach(ti => {
+      const p = ti.dataset.param;
+      if (!currentParams.has(p)) return;
+      ti.querySelectorAll('.tag:not(.ghost)').forEach(t => t.remove());
+      const txt = String(currentParams.get(p) || '');
+      if (!txt) return;
+      txt.split(',').map(s => s.trim()).filter(Boolean).forEach(t => addTag(ti, t));
+    });
+    $$('.repeater').forEach(rep => {
+      const p = rep.dataset.repeater;
+      rep.querySelector('.rep-list').innerHTML = '';
+      if (!currentParams.has(p)) return;
+      const stored = currentParams.get(p);
+      try {
+        const arr = JSON.parse(stored);
+        const columns = JSON.parse(rep.dataset.columns || '[]');
+        if (Array.isArray(arr)) {
+          arr.forEach(item => addRepeaterRow(rep, columns, item));
+        }
+      } catch(_) {}
+    });
+  }
+
+  function serializeUIToConfig(){
+    const paramsObj = {};
+
+    $$('.param').forEach(el => {
+      const path = el.dataset.param;
+      let include = true;
+      let val = el.value;
+
+      if (el.type === 'number') {
+        if (el.value === '') include = false;
+        else {
+          const n = parseFloat(el.value);
+          if (Number.isFinite(n)) val = n; else include = false;
+        }
+      } else if (el.type === 'range') {
+        val = Number(el.value);
+      } else if (el.type === 'date') {
+        if (!el.value) include = false;
+      } else {
+        if (el.value === '') include = false;
+      }
+
+      if (include) setByPath(paramsObj, path, val);
+    });
+
+    $$('.tag-input').forEach(ti => {
+      const path = ti.dataset.param;
+      const tags = [...ti.querySelectorAll('.tag:not(.ghost)')].map(t => t.childNodes[0].nodeValue.trim());
+      if (tags.length) setByPath(paramsObj, path, tags);
+    });
+
+    $$('.repeater').forEach(rep => {
+      const path = rep.dataset.repeater;
+      const columns = JSON.parse(rep.dataset.columns || '[]');
+      const rows = [...rep.querySelectorAll('.rep-row')];
+      if (!rows.length) return;
+      const arr = rows.map(r => {
+        const obj = {};
+        let idx = 0;
+        r.querySelectorAll('input').forEach(inp => {
+          const col = columns[idx];
+          if (col) {
+            const v = (inp.type === 'range') ? Number(inp.value) : inp.value;
+            obj[col.key] = v;
+          }
+          idx++;
+        });
+        return obj;
+      });
+      if (arr.length) setByPath(paramsObj, path, arr);
+    });
+
+    const meta = {
+      subject: currentSubject || null,
+      awareness: els.awareness.value,
+      autoApply: els.autoApply.checked
+    };
+    const imgData = (currentSubject && localStorage.getItem(subjectKey('image'))) || null;
+    if (imgData) meta.portrait = imgData;
+
+    return { meta, params: paramsObj };
+  }
+
+  function exportConfigFile(){
+    const cfg = serializeUIToConfig();
+    const json = JSON.stringify(cfg, null, 2);
+    const blob = new Blob([json], {type: 'application/json'});
+    const nameSlug = (currentSubject || 'subject').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'subject';
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `masterpc-${nameSlug}-${stamp}.json`;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
+  }
+
+  function importConfigFromFile(e){
+    const file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if (!file) return;
+    if (locked) { alert('Unlock parameters before loading a config.'); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const cfg = JSON.parse(reader.result);
+        applyConfigObject(cfg);
+        alert('Config loaded. Values have been queued; click Apply to commit (or turn on Auto-Apply).');
+      } catch(err) {
+        console.error(err);
+        alert('Invalid JSON file.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  function applyConfigObject(cfg){
+    const meta = cfg.meta || {};
+    if (!currentSubject) {
+      setCurrentSubject(meta.subject || 'Subject', { silent: true });
+      addKnownSubject(currentSubject);
+    }
+
+    if (meta.awareness) els.awareness.value = meta.awareness;
+    if (typeof meta.autoApply === 'boolean') els.autoApply.checked = meta.autoApply;
+    updateAwarenessEcho();
+    if (meta.portrait) {
+      els.previewImg.src = meta.portrait;
+      els.previewImg.style.display = 'block';
+      els.previewPh.style.display = 'none';
+      if (currentSubject) { localStorage.setItem(subjectKey('image'), meta.portrait); }
+    }
+
+    const source = cfg.params ? cfg.params : cfg;
+    const flat = flattenObject(source);
+
+    for (const [path, val] of Object.entries(flat)) {
+      const rep = document.querySelector(`.repeater[data-repeater="${cssEscape(path)}"]`);
+      if (rep && Array.isArray(val)) {
+        rep.querySelector('.rep-list').innerHTML = '';
+        const columns = JSON.parse(rep.dataset.columns || '[]');
+        val.forEach(item => addRepeaterRow(rep, columns, item));
+        recordRepeater(rep);
+        continue;
+      }
+      
+      const tag = document.querySelector(`.tag-input[data-param="${cssEscape(path)}"]`);
+      if (tag) {
+        tag.querySelectorAll('.tag:not(.ghost)').forEach(t => t.remove());
+        if (Array.isArray(val)) {
+          val.forEach(v => addTag(tag, String(v)));
+        } else if (typeof val === 'string') {
+          val.split(',').map(s => s.trim()).filter(Boolean).forEach(v => addTag(tag, v));
+        }
+        recordTagChange(tag);
+        continue;
+      }
+    }
+
+    for (const [path, val] of Object.entries(flat)) {
+      const input = document.querySelector(`.param[data-param="${cssEscape(path)}"]`);
+      if (!input) continue;
+      if (input.type === 'range') {
+        const n = Number(val);
+        if (!Number.isNaN(n)) {
+          input.value = String(n);
+          const b = findSiblingBubble(input); if (b) b.textContent = String(n);
+        }
+        input.dispatchEvent(new Event('input', {bubbles: true}));
+      } else if (input.type === 'number') {
+        if (val === '' || val === null || val === undefined) continue;
+        const n = Number(val);
+        if (!Number.isNaN(n)) input.value = String(n);
+        else input.value = String(val);
+        input.dispatchEvent(new Event('change', {bubbles: true}));
+      } else if (input.type === 'color') {
+        input.value = String(val || '#000000');
+        input.dispatchEvent(new Event('input', {bubbles: true}));
+      } else {
+        input.value = String(val);
+        input.dispatchEvent(new Event('change', {bubbles: true}));
+      }
+    }
+  }
+
+  function flattenObject(obj, prefix = ''){
+    const out = {};
+    for (const [k, v] of Object.entries(obj || {})) {
+      const path = prefix ? `${prefix}.${k}` : k;
+      if (v && typeof v === 'object' && !Array.isArray(v)) {
+        Object.assign(out, flattenObject(v, path));
+      } else {
+        out[path] = v;
+      }
+    }
+    return out;
+  }
+
+  function setByPath(obj, path, val){
+    const parts = String(path).split('.');
+    let cur = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+      const p = parts[i];
+      if (!cur[p] || typeof cur[p] !== 'object') cur[p] = {};
+      cur = cur[p];
+    }
+    cur[parts[parts.length - 1]] = val;
+  }
+
+  function cssEscape(s){
+    return String(s).replace(/["\\]/g, '\\$&');
+  }
+
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"'`]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;'}[c]));
+  }
+
+  // Initialize on load
+  init();
+})();
+</script>
+</body>
+</html>
