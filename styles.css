@@ -17,6 +17,8 @@
   --footer-h: 240px;     /* initial height of the logs footer */
   --logs-left-px: 50%;   /* initial width of Change Queue column (can be % or px) */
   --gutter: 8px;         /* visual/drag width of the splitter handles */
+  --grid-gap: 12px;
+  --footer-gap: 12px;
 }
 
 @media (prefers-color-scheme: dark){
@@ -76,6 +78,7 @@ body::after{
   box-shadow: var(--shadow); 
   border-radius: var(--radius); 
   padding: 14px; 
+  flex: 0 0 auto;
 }
 
 .title-row{ 
@@ -205,10 +208,17 @@ button.danger{
 .grid{ 
   display:grid; 
   grid-template-columns: var(--col-left) 1fr; /* left | right */
-  gap:12px; 
+  gap: var(--grid-gap);
   min-height:0; 
   flex:1 1 auto; 
   position: relative;
+  overflow: hidden;
+}
+
+/* Let the left (preview) panel scroll vertically when space is tight */
+.grid > .panel:first-child {
+  min-height: 0;        /* allow shrinking */
+  overflow: auto;       /* show scrollbar instead of clipping */
 }
 
 .panel{ 
@@ -481,14 +491,18 @@ input[type="range"]{
   cursor:pointer; 
 }
 
-.footer{ 
-  display:grid; 
-  gap:12px; 
-  position: relative;            /* so we can anchor a handle at the top edge */
-  height: var(--footer-h);
-  grid-template-columns: var(--logs-left-px) calc(100% - var(--logs-left-px));
-  min-height: 140px;             /* reasonable minimum */
+.footer{
+  position: relative;
+  flex: 0 0 var(--footer-h);              /* from earlier resizer fix */
+  display: grid;
+  grid-template-columns: var(--logs-left-px) 1fr;  /* <- changed */
+  gap: var(--footer-gap);
+  min-height: 140px;
 }
+
+/* Make sure inner logs can scroll instead of growing the footer */
+.footer .log { min-height:0; display:flex; flex-direction:column; }
+.footer .log .content { min-height:0; overflow:auto; }
 
 .log{ 
   border:1px solid var(--border); 
@@ -605,8 +619,7 @@ input[type="range"]{
   cursor: col-resize;
   top: 0; bottom: 0;
   width: var(--gutter);
-  /* Anchor at column boundary: left edge = current left width - half gutter */
-  left: calc(var(--col-left) + 12px - var(--gutter)/2); /* +12px is the grid gap */
+  left: calc(var(--col-left) + var(--grid-gap) - var(--gutter)/2);
 }
 
 /* Horizontal handle between center grid and footer (appears at top edge of footer) */
@@ -622,8 +635,7 @@ input[type="range"]{
   cursor: col-resize;
   top: 0; bottom: 0;
   width: var(--gutter);
-  /* Place at the logs split (works with px or % in --logs-left-px) */
-  left: calc(var(--logs-left-px) + 12px - var(--gutter)/2); /* +12px is the gap */
+  left: calc(var(--logs-left-px) + var(--footer-gap) - var(--gutter)/2);
 }
 
 /* Modal */
@@ -683,10 +695,22 @@ input[type="range"]{
   gap: 8px;
 }
 
+/* Image URL input and button wrap neatly on small widths */
 .upload-option {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;      /* allow wrapping */
+}
+
+.upload-option input[type="text"] {
+  flex: 1 1 180px;      /* shrink nicely; grows when space allows */
+  min-width: 0;         /* prevent overflow */
+}
+
+#imgUrlBtn, #imgUploadBtn {
+  flex: 0 0 auto;       /* keep button’s natural size */
+  white-space: nowrap;  /* avoid breaking the label */
 }
 
 .upload-label {
