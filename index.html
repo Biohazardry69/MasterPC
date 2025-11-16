@@ -1184,8 +1184,143 @@
     return String(s).replace(/[&<>"'`]/g, c => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;'}[c]));
   }
 
+  function installResizers(){
+    const grid = document.querySelector('.grid');
+    const footer = document.querySelector('.footer');
+    const header = document.querySelector('.header');
+    const app = document.querySelector('.app');
+    if (!grid || !footer || !header || !app) return;
+
+    // 1) Vertical resizer between Live Preview (left) and Parameters (right)
+    const vMain = document.createElement('div');
+    vMain.className = 'resizer resizer-col';
+    grid.appendChild(vMain);
+    makeDrag(vMain, {
+      onStart(){
+        const leftPx = pxVar('--col-left', 360);
+        return { leftPx };
+      },
+      onMove(dx, dy, start){
+        const rect = grid.getBoundingClientRect();
+        const minLeft = 240;                  // min left panel width
+        const minRight = 360;                 // min right panel width
+        let newLeft = start.leftPx + dx;
+        newLeft = Math.max(minLeft, Math.min(newLeft, rect.width - 12 /*gap*/ - minRight));
+        setCssVar('--col-left', newLeft + 'px');
+      }
+    });
+
+    // 2) Horizontal resizer between center grid and footer
+    const hMain = document.createElement('div');
+    hMain.className = 'resizer resizer-row';
+    footer.appendChild(hMain); // positioned at top edge of footer
+    makeDrag(hMain, {
+      onStart(){
+        const footerH = pxVar('--footer-h', 240);
+        return { footerH };
+      },
+      onMove(dx, dy, start){
+        const appRect = app.getBoundingClientRect();
+        const headerH = header.getBoundingClientRect().height;
+        const minFooter = 140;
+        const maxFooter = Math.max(minFooter, appRect.height - headerH - 220); // ensure grid keeps space
+        // Dragging up reduces footer height, down increases
+        let newH = start.footerH - dy;
+        newH = Math.max(minFooter, Math.min(newH, maxFooter));
+        setCssVar('--footer-h', newH + 'px');
+      }
+    });
+
+    // 3) Vertical resizer between Change Queue and Applied Log inside footer
+    const vLogs = document.createElement('div');
+    vLogs.className = 'resizer resizer-col-logs';
+    footer.appendChild(vLogs);
+    makeDrag(vLogs, {
+      onStart(){
+        // current left log width in px (from computed var or from DOM)
+        const leftPx = logsLeftPixels(footer);
+        return { leftPx };
+      },
+      onMove(dx, dy, start){
+        const rect = footer.getBoundingClientRect();
+        const min = 260;                       // min width for each log column
+        let newLeft = start.leftPx + dx;
+        newLeft = Math.max(min, Math.min(newLeft, rect.width - 12 /*gap*/ - min));
+        setCssVar('--logs-left-px', newLeft + 'px');
+      }
+    });
+
+    // Keep things reasonable on window resize
+    window.addEventListener('resize', ()=>{
+      const rect = grid.getBoundingClientRect();
+      const left = pxVar('--col-left', 360);
+      const clampedLeft = Math.max(240, Math.min(left, rect.width - 12 - 360));
+      if (clampedLeft !== left) setCssVar('--col-left', clampedLeft + 'px');
+
+      // Clamp logs split too
+      const fRect = footer.getBoundingClientRect();
+      const logsLeft = logsLeftPixels(footer);
+      const clampedLogsLeft = Math.max(260, Math.min(logsLeft, fRect.width - 12 - 260));
+      if (clampedLogsLeft !== logsLeft) setCssVar('--logs-left-px', clampedLogsLeft + 'px');
+    });
+  }
+
+  // Generic drag helper using Pointer Events
+  function makeDrag(handle, { onStart, onMove }){
+    handle.addEventListener('pointerdown', (e)=>{
+      e.preventDefault();
+      handle.setPointerCapture?.(e.pointerId);
+      const startState = onStart ? onStart() : {};
+      const sx = e.clientX, sy = e.clientY;
+
+      function move(ev){
+        onMove?.(ev.clientX - sx, ev.clientY - sy, startState);
+      }
+      function up(){
+        document.removeEventListener('pointermove', move);
+        document.removeEventListener('pointerup', up);
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+      }
+      document.addEventListener('pointermove', move);
+      document.addEventListener('pointerup', up, { once:true });
+      document.body.style.userSelect = 'none';
+      // Match cursor to handle for better UX
+      document.body.style.cursor = getComputedStyle(handle).cursor || 'default';
+    });
+  }
+
+  // CSS var helpers
+  function setCssVar(name, value){
+    document.documentElement.style.setProperty(name, value);
+  }
+  function pxVar(name, fallback){
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    if (!v) return fallback;
+    if (v.endsWith('%')){
+      // Convert % to px relative to container where appropriate; default to fallback
+      return fallback;
+    }
+    if (v.endsWith('px')) return parseFloat(v);
+    const num = parseFloat(v);
+    return Number.isFinite(num) ? num : fallback;
+  }
+  function logsLeftPixels(footerEl){
+    // Prefer current CSS var if in px; otherwise measure first log width
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--logs-left-px').trim();
+    if (raw.endsWith('px')) return parseFloat(raw);
+    const firstLog = footerEl.querySelector('.log');
+    return firstLog ? firstLog.getBoundingClientRect().width : (footerEl.getBoundingClientRect().width / 2);
+  }
+
+
+
   // Initialize on load
   init();
+
+  // After your UI has been rendered and event hooks are set:
+  installResizers();
+
 })();
 </script>
 </body>

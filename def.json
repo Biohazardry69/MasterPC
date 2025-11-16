@@ -15,7 +15,7 @@
     {
       "id": "physical",
       "label": "Physical Attributes",
-      "expanded": true,
+      "expanded": false,
       "items": [
         {
           "type": "input",

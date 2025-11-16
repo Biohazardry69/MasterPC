@@ -13,6 +13,10 @@
   --line:#163232;
   --shadow: 0 0 0 1px var(--border), 0 0 18px rgba(0,224,164,0.08) inset;
   --radius:10px;
+  --col-left: 360px;     /* initial width of Live Preview panel */
+  --footer-h: 240px;     /* initial height of the logs footer */
+  --logs-left-px: 50%;   /* initial width of Change Queue column (can be % or px) */
+  --gutter: 8px;         /* visual/drag width of the splitter handles */
 }
 
 @media (prefers-color-scheme: dark){
@@ -200,10 +204,11 @@ button.danger{
 
 .grid{ 
   display:grid; 
-  grid-template-columns: 340px 1fr; 
+  grid-template-columns: var(--col-left) 1fr; /* left | right */
   gap:12px; 
   min-height:0; 
   flex:1 1 auto; 
+  position: relative;
 }
 
 .panel{ 
@@ -464,9 +469,11 @@ input[type="range"]{
 
 .footer{ 
   display:grid; 
-  grid-template-columns: 1fr 1fr; 
   gap:12px; 
-  min-height:160px; 
+  position: relative;            /* so we can anchor a handle at the top edge */
+  height: var(--footer-h);
+  grid-template-columns: var(--logs-left-px) calc(100% - var(--logs-left-px));
+  min-height: 140px;             /* reasonable minimum */
 }
 
 .log{ 
@@ -570,4 +577,37 @@ input[type="range"]{
 .mini{ 
   font-size:12px; 
   padding:6px 8px; 
+}
+
+/* Draggable resizers (handles) */
+.resizer{
+  position: absolute;
+  z-index: 20;
+  user-select: none;
+}
+
+/* Vertical handle between Live Preview and Parameters */
+.resizer-col{
+  cursor: col-resize;
+  top: 0; bottom: 0;
+  width: var(--gutter);
+  /* Anchor at column boundary: left edge = current left width - half gutter */
+  left: calc(var(--col-left) + 12px - var(--gutter)/2); /* +12px is the grid gap */
+}
+
+/* Horizontal handle between center grid and footer (appears at top edge of footer) */
+.resizer-row{
+  cursor: row-resize;
+  left: 0; right: 0;
+  height: var(--gutter);
+  top: calc(-1 * (var(--gutter)/2)); /* sit half above the footer */
+}
+
+/* Vertical handle between Change Queue and Applied Log inside footer */
+.resizer-col-logs{
+  cursor: col-resize;
+  top: 0; bottom: 0;
+  width: var(--gutter);
+  /* Place at the logs split (works with px or % in --logs-left-px) */
+  left: calc(var(--logs-left-px) + 12px - var(--gutter)/2); /* +12px is the gap */
 }
