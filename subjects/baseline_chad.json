@@ -1,4 +1,6 @@
 {
+  "name": "Baseline Chad",
+  "image": "subjects/baseline_chad.png",
   "values": [
     {
       "id": "physical.height.cm",

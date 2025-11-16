@@ -1,4 +1,6 @@
 {
+  "name": "Baseline Bimbo",
+  "image": "subjects/baseline_bimbo.png",
   "values": [
     {
       "id": "physical.height.cm",

@@ -58,9 +58,19 @@
         </div>
         <div class="mask"></div>
       </div>
-      <div class="upload-row">
-        <input id="imgUpload" type="file" accept="image/*" />
-        <button id="clearImgBtn">Clear</button>
+      <div class="image-upload-area" id="imageUploadArea">
+        <div class="upload-option">
+          <label class="upload-label">
+            <input id="imgUpload" type="file" accept="image/*" style="display:none;" />
+            <button id="imgUploadBtn">Choose File</button>
+          </label>
+        </div>
+        <div class="upload-option">
+          <input id="imgUrlInput" type="text" placeholder="Or paste image URL..." style="flex:1;" />
+          <button id="imgUrlBtn">Load URL</button>
+        </div>
+        <button id="clearImgBtn" class="secondary mini">Clear Image</button>
+        <div class="note ghost" style="text-align:center;width:100%;margin-top:4px;">Drag & drop an image anywhere on the preview</div>
       </div>
 
       <h3>Custom Commands</h3>
@@ -590,16 +600,62 @@
     els.clearAppliedBtn.addEventListener('click', clearApplied);
     els.queueCmdBtn.addEventListener('click', queueCommand);
 
-    // Preview image (no persistence)
-    els.imgUpload.addEventListener('change', e=>{
-      const f = e.target.files?.[0]; if (!f) return;
-      const r = new FileReader();
-      r.onload=()=>{ els.previewImg.src=r.result; els.previewImg.style.display='block'; els.previewPh.style.display='none'; };
-      r.readAsDataURL(f);
-    });
-    els.clearImgBtn.addEventListener('click', ()=>{
-      els.previewImg.src=''; els.previewImg.style.display='none'; els.previewPh.style.display='block';
-    });
+    // Image upload: file picker
+    els.imgUpload.addEventListener('change', handleImageFileSelect);
+    
+    // Image upload: manual button trigger
+    const imgUploadBtn = $('#imgUploadBtn');
+    if (imgUploadBtn){
+      imgUploadBtn.addEventListener('click', ()=> els.imgUpload.click());
+    }
+
+    // Image upload: URL
+    const imgUrlBtn = $('#imgUrlBtn');
+    const imgUrlInput = $('#imgUrlInput');
+    if (imgUrlBtn && imgUrlInput){
+      imgUrlBtn.addEventListener('click', ()=>{
+        const url = (imgUrlInput.value || '').trim();
+        if (url){
+          setPreviewImageFromURL(url);
+          imgUrlInput.value = '';
+        }else{
+          alert('Enter an image URL.');
+        }
+      });
+      imgUrlInput.addEventListener('keydown', e=>{
+        if (e.key === 'Enter'){
+          e.preventDefault();
+          imgUrlBtn.click();
+        }
+      });
+    }
+
+    // Image clear
+    els.clearImgBtn.addEventListener('click', clearPreviewImage);
+
+    // Drag & drop on preview area
+    const previewArea = $('#preview');
+    if (previewArea){
+      previewArea.addEventListener('dragover', e=>{
+        e.preventDefault();
+        e.stopPropagation();
+        previewArea.classList.add('drag-over');
+      });
+      previewArea.addEventListener('dragleave', e=>{
+        e.preventDefault();
+        e.stopPropagation();
+        previewArea.classList.remove('drag-over');
+      });
+      previewArea.addEventListener('drop', e=>{
+        e.preventDefault();
+        e.stopPropagation();
+        previewArea.classList.remove('drag-over');
+        const files = e.dataTransfer?.files;
+        if (files && files[0]){
+          loadImageFromFile(files[0]);
+        }
+      });
+    }
 
     // Subject modal
     els.subjectSearchBtn.addEventListener('click', openSubjectModal);
@@ -607,6 +663,21 @@
     els.cancelSubjectBtn.addEventListener('click', closeSubjectModal);
     els.useSubjectBtn.addEventListener('click', useSubjectFromModal);
     els.presetFilter.addEventListener('input', filterPresetList);
+  }
+
+
+  function handleImageFileSelect(e){
+    const file = e.target.files?.[0];
+    e.target.value = ''; // reset for repeat uploads
+    if (file) loadImageFromFile(file);
+  }
+
+  function loadImageFromFile(file){
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      setPreviewImageFromURL(reader.result); // data URL
+    };
+    reader.readAsDataURL(file);
   }
 
   function setAllDetails(open){
@@ -974,9 +1045,10 @@
 
   function exportSubjectFile(){
     if (!currentSubject){ alert('Select a subject first.'); return; }
+    
     const pairs = [];
 
-    // recognized .param (simple inputs)
+    // Recognized .param (simple inputs)
     $$('.param').forEach(el=>{
       const id = el.dataset.param;
       const meta = PARAM_META.get(id);
@@ -985,26 +1057,26 @@
       if (meta.type === 'range'){
         val = Number(el.value);
       }else if (meta.type === 'input' && el.type === 'number'){
-        if (el.value === '') return; // skip empty
+        if (el.value === '') return;
         const n = Number(el.value);
         val = Number.isNaN(n) ? el.value : n;
       }else if (meta.type === 'input' && el.type === 'color'){
         val = el.value || '#000000';
       }else{
-        if (el.value === '') return; // skip empty strings for compact exports
+        if (el.value === '') return;
         val = el.value;
       }
       pairs.push({ id, value: val });
     });
 
-    // tags -> arrays
+    // Tags -> arrays
     $$('.tag-input').forEach(ti=>{
       const id = ti.dataset.param;
       const tags = [...ti.querySelectorAll('.tag:not(.ghost)')].map(t => t.childNodes[0].nodeValue.trim());
       if (tags.length) pairs.push({ id, value: tags });
     });
 
-    // repeaters -> arrays of objects
+    // Repeaters -> arrays of objects
     $$('.repeater').forEach(rep=>{
       const id = rep.dataset.repeater;
       const cols = JSON.parse(rep.dataset.columns || '[]');
@@ -1025,7 +1097,7 @@
       pairs.push({ id, value: arr });
     });
 
-    // unknowns (textarea) -> try JSON, else string
+    // Unknowns (textarea) -> try JSON, else string
     $$('.unknown-param').forEach(ta=>{
       const id = ta.dataset.unknownId;
       const txt = ta.value;
@@ -1034,7 +1106,18 @@
       pairs.push({ id, value: val });
     });
 
-    const out = { values: pairs };
+    // Get current image (either data URL or external URL)
+    let imageURL = null;
+    if (els.previewImg.src && els.previewImg.style.display !== 'none'){
+      imageURL = els.previewImg.src;
+    }
+
+    const out = {
+      name: currentSubject,
+      image: imageURL,
+      values: pairs
+    };
+
     const blob = new Blob([JSON.stringify(out, null, 2)], {type:'application/json'});
     const slug = (currentSubject || 'subject').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') || 'subject';
     const stamp = new Date().toISOString().replace(/[:.]/g,'-');
@@ -1045,18 +1128,33 @@
     a.click();
     setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 0);
   }
-
   function handleImportSubjectFile(e){
     const file = e.target.files?.[0];
     e.target.value = '';
     if (!file) return;
     if (locked){ alert('Unlock parameters before importing.'); return; }
+    
     const r = new FileReader();
     r.onload = ()=>{
       try{
         const data = JSON.parse(r.result);
-        const pairs = normalizeSubjectData(data);
+        const { name, image, pairs } = normalizeSubjectData(data);
+        
+        // Set subject name from file if provided
+        if (name){
+          setCurrentSubject(name);
+        } else if (!currentSubject){
+          setCurrentSubject('Imported Subject');
+        }
+
+        // Import parameter values
         importPairsApply(pairs);
+
+        // Load image if provided
+        if (image){
+          setPreviewImageFromURL(image);
+        }
+
         alert('Subject values imported.');
       }catch(err){
         console.error(err);
@@ -1072,15 +1170,32 @@
   // { "id1": value1, "id2": value2, ... }
   function normalizeSubjectData(data){
     let pairs = [];
-    if (Array.isArray(data)){
-      pairs = data;
-    }else if (data && Array.isArray(data.values)){
-      pairs = data.values;
-    }else if (data && typeof data === 'object'){
-      pairs = Object.entries(data).map(([id, value])=>({id, value}));
+    let name = null;
+    let image = null;
+
+    // Extract metadata
+    if (data && typeof data === 'object'){
+      name = data.name || null;
+      image = data.image || null;
+
+      // Extract values
+      if (Array.isArray(data.values)){
+        pairs = data.values;
+      } else if (Array.isArray(data)){
+        pairs = data;
+      } else {
+        // Flat object format { "id1": value1, ... }
+        pairs = Object.entries(data)
+          .filter(([k]) => k !== 'name' && k !== 'image') // exclude metadata
+          .map(([id, value]) => ({id, value}));
+      }
     }
-    // filter out invalid
-    return pairs.filter(p => p && typeof p.id === 'string');
+
+    return {
+      name,
+      image,
+      pairs: pairs.filter(p => p && typeof p.id === 'string')
+    };
   }
 
   function importPairsApply(pairs){
@@ -1219,27 +1334,31 @@
   }
 
   async function setCurrentSubjectAndLoad(name, file, imageUrl){
-    setCurrentSubject(name);
-
-    // Load preset parameter values
     try{
       const r = await fetch(file, {cache:'no-store'});
       if (!r.ok) throw new Error(`Failed to load ${file}`);
       const data = await r.json();
-      const pairs = normalizeSubjectData(data);
+      const { name: subjectName, image: subjectImage, pairs } = normalizeSubjectData(data);
+
+      // Use name from file if available, otherwise use provided name
+      const finalName = subjectName || name || 'Subject';
+      setCurrentSubject(finalName);
+
+      // Import parameters
       importPairsApply(pairs);
+
+      // Use image from file if available, otherwise use provided imageUrl
+      const finalImage = subjectImage || imageUrl;
+      if (finalImage){
+        setPreviewImageFromURL(finalImage);
+      } else {
+        clearPreviewImage();
+      }
     }catch(err){
       console.error(err);
       alert(err.message || 'Failed to load preset.');
       applyDefaultsForAll();
-    }
-
-    // Apply portrait if provided
-    if (imageUrl){
-      setPreviewImageFromURL(imageUrl);
-    }else{
-      // If no image is provided, leave current image as-is (or clear if you prefer)
-      // clearPreviewImage();
+      clearPreviewImage();
     }
   }
 

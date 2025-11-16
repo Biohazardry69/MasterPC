@@ -1,4 +1,6 @@
 {
+  "name": "Baseline Female",
+  "image": "subjects/baseline_female.png",
   "values": [
     {
       "id": "physical.height.cm",

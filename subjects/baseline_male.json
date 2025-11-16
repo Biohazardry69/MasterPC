@@ -1,4 +1,6 @@
 {
+  "name": "Baseline Male",
+  "image": "subjects/baseline_male.png",
   "values": [
     {
       "id": "physical.height.cm",
