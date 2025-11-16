@@ -1107,16 +1107,17 @@
   // -------------------- Subject Modal --------------------
 
   async function loadPresetIndex(){
-    // Try to load optional subjects/index.json, fallback to empty
     try{
       const r = await fetch('subjects/index.json', {cache:'no-store'});
       if (!r.ok) throw new Error();
       const arr = await r.json();
-      // Expected format: [{name, file}] or {subjects: [...]}
       const list = Array.isArray(arr) ? arr : (Array.isArray(arr.subjects) ? arr.subjects : []);
-      PRESETS = list.filter(x => x && x.name && x.file);
+      // Keep name, file, image
+      PRESETS = list
+        .filter(x => x && x.name && x.file)
+        .map(x => ({ name: x.name, file: x.file, image: x.image || '' }));
     }catch(_){
-      PRESETS = []; // user will populate later
+      PRESETS = [];
     }
     rebuildPresetList();
     rebuildPresetSelect();
@@ -1150,20 +1151,28 @@
       els.presetList.appendChild(note);
       return;
     }
-    PRESETS.forEach((p,i)=>{
+
+    PRESETS.forEach(p=>{
       const card = document.createElement('button');
       card.className = 'preset-card';
       card.dataset.name = p.name;
-      card.innerHTML = `<div class="pc-title">${escapeHtml(p.name)}</div><div class="pc-sub">${escapeHtml(p.file)}</div>`;
+      card.innerHTML = `
+        <div style="display:flex; gap:10px; align-items:center;">
+          ${p.image ? `<img src="${p.image}" alt="" style="width:44px;height:44px;object-fit:cover;border-radius:6px;border:1px solid var(--line);" />` : ''}
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div class="pc-title">${escapeHtml(p.name)}</div>
+            <div class="pc-sub">${escapeHtml(p.file)}</div>
+          </div>
+        </div>`;
       card.addEventListener('click', ()=>{
         SELECTED_PRESET = p;
         els.subjectNameInput.value = p.name;
-        // highlight selection
         $$('.preset-card').forEach(c => c.classList.remove('selected'));
         card.classList.add('selected');
       });
       els.presetList.appendChild(card);
     });
+
     filterPresetList();
   }
 
@@ -1183,31 +1192,36 @@
     const name = (els.subjectNameInput.value || '').trim();
     if (!name){ alert('Enter a subject name or pick one.'); return; }
 
-    // Determine mode
     const mode = (document.querySelector('input[name="newMode"]:checked')?.value) || 'blank';
     const presetFileFromSelect = els.presetSelect.value || '';
 
-    // If a predefined card is selected, load it
+    // If user clicked a preset card
     if (SELECTED_PRESET){
-      await setCurrentSubjectAndLoad(name, SELECTED_PRESET.file);
+      await setCurrentSubjectAndLoad(name, SELECTED_PRESET.file, SELECTED_PRESET.image);
       closeSubjectModal();
       return;
     }
 
-    // New subject by name
+    // If user chose "Start from preset" from dropdown
     if (mode === 'preset' && presetFileFromSelect){
-      await setCurrentSubjectAndLoad(name, presetFileFromSelect);
+      const preset = PRESETS.find(p => p.file === presetFileFromSelect);
+      const presetImg = preset?.image || '';
+      await setCurrentSubjectAndLoad(name, presetFileFromSelect, presetImg);
     }else{
+      // Blank subject: apply defaults and clear preview
       setCurrentSubject(name);
-      // Blank: apply schema defaults, clear unknowns
       applyDefaultsForAll();
       clearUnrecognized();
+      clearPreviewImage();
     }
+
     closeSubjectModal();
   }
 
-  async function setCurrentSubjectAndLoad(name, file){
+  async function setCurrentSubjectAndLoad(name, file, imageUrl){
     setCurrentSubject(name);
+
+    // Load preset parameter values
     try{
       const r = await fetch(file, {cache:'no-store'});
       if (!r.ok) throw new Error(`Failed to load ${file}`);
@@ -1217,8 +1231,15 @@
     }catch(err){
       console.error(err);
       alert(err.message || 'Failed to load preset.');
-      // Fall back to defaults if preset load fails
       applyDefaultsForAll();
+    }
+
+    // Apply portrait if provided
+    if (imageUrl){
+      setPreviewImageFromURL(imageUrl);
+    }else{
+      // If no image is provided, leave current image as-is (or clear if you prefer)
+      // clearPreviewImage();
     }
   }
 
@@ -1230,6 +1251,19 @@
     stagedChanges.clear();
     renderQueue();
     // don't clear applied log to keep session history, but we can if desired
+  }
+
+  function setPreviewImageFromURL(url){
+    if (!url) { clearPreviewImage(); return; }
+    els.previewImg.onload = () => { els.previewImg.style.display='block'; els.previewPh.style.display='none'; els.previewImg.onload = null; };
+    els.previewImg.onerror = () => { console.warn('Failed to load subject image:', url); clearPreviewImage(); els.previewImg.onerror = null; };
+    els.previewImg.src = url;
+  }
+
+  function clearPreviewImage(){
+    els.previewImg.src = '';
+    els.previewImg.style.display = 'none';
+    els.previewPh.style.display = 'block';
   }
 
   // -------------------- Utilities --------------------
